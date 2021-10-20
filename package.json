@@ -1,0 +1,32 @@
+{
+  "name": "mudmen",
+  "version": "1.0.0",
+  "description": "mud men mud men mud men",
+  "main": "dist/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjleitz/mudmen.git"
+  },
+  "keywords": [
+    "mudmen",
+    "mud men",
+    "sim"
+  ],
+  "author": "Keegan Leitz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kjleitz/mudmen/issues"
+  },
+  "homepage": "https://github.com/kjleitz/mudmen#readme",
+  "devDependencies": {
+    "fork-ts-checker-webpack-plugin": "^6.3.4",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.4.4",
+    "webpack": "^5.58.2",
+    "webpack-cli": "^4.9.1"
+  }
+}
