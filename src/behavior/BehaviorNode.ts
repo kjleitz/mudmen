@@ -1,11 +1,6 @@
-export const enum BehaviorStatus {
-  RUNNING,
-  SUCCESS,
-  FAILURE,
-}
+import BehaviorStatus from "./BehaviorStatus";
 
 export default interface BehaviorNode {
-  children?: BehaviorNode[];
   status: BehaviorStatus;
 
   init?<T>(...args: T[]): void;

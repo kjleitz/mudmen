@@ -1,9 +1,15 @@
-import BehaviorNode, { BehaviorStatus } from "../BehaviorNode";
 import LeafNode from "../LeafNode";
 
 export default class Log extends LeafNode {
-  process(message: string) {
-    console.log(message);
-    this.status = BehaviorStatus.SUCCESS;
+  public message: string;
+
+  constructor(message: string) {
+    super();
+    this.message = message;
+  }
+
+  process() {
+    console.log(this.message);
+    this.succeed();
   }
 }

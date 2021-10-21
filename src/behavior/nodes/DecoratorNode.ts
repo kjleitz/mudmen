@@ -1,14 +1,15 @@
-import BehaviorNode, { BehaviorStatus } from "./BehaviorNode";
+import BaseNode from "./BaseNode";
 
-export default class DecoratorNode<ChildNode extends BehaviorNode = BehaviorNode> implements BehaviorNode {
+export default class DecoratorNode<ChildNode extends BaseNode = BaseNode> extends BaseNode {
   public child: ChildNode;
-  public status = BehaviorStatus.RUNNING;
 
   constructor(child: ChildNode) {
+    super();
     this.child = child;
   }
 
-  process() {
-    throw new Error("Method #process must be implemented on classes extending DecoratorNode");
+  reset(): void {
+    super.reset();
+    this.child.reset();
   }
 }

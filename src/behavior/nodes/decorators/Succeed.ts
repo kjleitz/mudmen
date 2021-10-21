@@ -1,9 +1,9 @@
-import BehaviorNode, { BehaviorStatus } from "../BehaviorNode";
+import BaseNode from "../BaseNode";
 import DecoratorNode from "../DecoratorNode";
 
-export default class Succeed<T extends BehaviorNode> extends DecoratorNode<T> {
+export default class Succeed<T extends BaseNode> extends DecoratorNode<T> {
   process() {
     this.child.process();
-    this.status = BehaviorStatus.SUCCESS;
+    this.succeed();
   }
 }

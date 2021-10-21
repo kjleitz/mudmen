@@ -1,9 +1,10 @@
-import BehaviorNode, { BehaviorStatus } from "../BehaviorNode";
+import BaseNode from "../BaseNode";
 import DecoratorNode from "../DecoratorNode";
 
-export default class UntilFail<T extends BehaviorNode> extends DecoratorNode<T> {
+export default class UntilFail<T extends BaseNode> extends DecoratorNode<T> {
   process() {
+    this.child.reset();
     this.child.process();
-    if (this.child.status === BehaviorStatus.FAILURE) this.status = BehaviorStatus.SUCCESS;
+    if (this.child.failed) this.succeed();
   }
 }
