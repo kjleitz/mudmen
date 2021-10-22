@@ -5,7 +5,8 @@
   "main": "dist/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "build": "webpack --mode production",
+    "build:watch": "webpack --mode development --watch"
   },
   "repository": {
     "type": "git",
@@ -28,5 +29,9 @@
     "typescript": "^4.4.4",
     "webpack": "^5.58.2",
     "webpack-cli": "^4.9.1"
+  },
+  "dependencies": {
+    "@types/uuid": "^8.3.1",
+    "uuid": "^8.3.2"
   }
 }
