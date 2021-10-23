@@ -1,5 +1,6 @@
 import { shuffleInPlace } from "@/utilities/collections";
 import BaseNode from "@/behavior/base/nodes/BaseNode";
+import Blackboard from "@/behavior/base/data/Blackboard";
 
 export interface CompositeNodeOptions {
   shuffle?: boolean;

@@ -20,7 +20,7 @@ export default class Item {
     this.type = type;
     this.x = x;
     this.y = y;
-    mudworld.data.itemsByType[type].push(this);
+    // mudworld.data.itemsByType[type].push(this);
   }
 
   set used(used: boolean) {

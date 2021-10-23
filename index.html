@@ -5,8 +5,106 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    /* This is not meant to be permanent; just for testing noise generators. */
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      z-index: 10;
+      opacity: 0.5;
+    }
+
+    .continents-controls {
+      left: 0;
+    }
+
+    .land-controls {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .local-controls {
+      right: 0;
+    }
+  </style>
 </head>
 <body>
+  <div class="controls continents-controls">
+    <input type="number" id="continents-magnitude" value="1">
+    <input type="number" id="continents-frequency" value="1">
+  </div>
+  <div class="controls land-controls">
+    <input type="number" id="land-magnitude" value="0.5">
+    <input type="number" id="land-frequency" value="2">
+  </div>
+  <div class="controls local-controls">
+    <input type="number" id="local-magnitude" value="0.25">
+    <input type="number" id="local-frequency" value="4">
+  </div>
+
+  <!-- <canvas id="world-map" width="100%" height="100%"></canvas>
+  <canvas id="viewport" width="100%" height="100%"></canvas> -->
+  <!-- <canvas id="world-map"></canvas> -->
+  <canvas id="viewport"></canvas>
+
+  <script>
+    window.controls = {
+      continents: {
+        magnitude: {
+          el: document.getElementById("continents-magnitude"),
+          val: 1,
+        },
+        frequency: {
+          el: document.getElementById("continents-frequency"),
+          val: 1,
+        },
+      },
+      land: {
+        magnitude: {
+          el: document.getElementById("land-magnitude"),
+          val: 0.5,
+        },
+        frequency: {
+          el: document.getElementById("land-frequency"),
+          val: 2,
+        },
+      },
+      local: {
+        magnitude: {
+          el: document.getElementById("local-magnitude"),
+          val: 0.25,
+        },
+        frequency: {
+          el: document.getElementById("local-frequency"),
+          val: 4,
+        },
+      },
+    };
+
+    Object.keys(window.controls).forEach((control) => {
+      Object.keys(window.controls[control]).forEach((controlType) => {
+        window.controls[control][controlType].el.addEventListener("input", (event) => {
+          window.controls[control][controlType].val = parseFloat(event.target.value);
+          window.renderOnce();
+        });
+      });
+    });
+  </script>
+
   <script src="/dist/main.js"></script>
+
+  <script>
+    window.renderOnce();
+  </script>
 </body>
 </html>
