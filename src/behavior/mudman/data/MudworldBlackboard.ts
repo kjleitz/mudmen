@@ -34,11 +34,10 @@ export const mudworldMap = new MudworldMap(512, 512);
 
 mudworldMap.fillWithTerrain();
 
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 1000; i++) {
   const coords = mudworldMap.randomCoordsOnLand();
   mudworldItems.add(new Water(25, coords[0], coords[1]));
 }
-mudworldItems.add(new Water(25, 15, 50));
 
 export const mudworld = new MudworldBlackboard({
   timestamp: 0, // will have to be set by game loop

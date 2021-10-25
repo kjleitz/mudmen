@@ -25,7 +25,8 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       path: [],
       moveSpeed: 10,
       hydration: 10,
-      eyesight: 200,
+      // eyesight: 200,
+      eyesight: 300,
       inventory: new Map(),
     };
   }

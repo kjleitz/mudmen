@@ -14,7 +14,10 @@ export default class FindItem extends LeafNode {
   process(local: MudmanBlackboard, world: MudworldBlackboard): void {
     const item = world.data.items.findClosest(this.itemType, local.x, local.y);
 
+    // console.log("finding item...")
+
     if (!item) {
+      // console.log("literally none left in the entire world")
       this.fail();
       return;
     }
@@ -28,6 +31,12 @@ export default class FindItem extends LeafNode {
       local.data.eyesight,
     );
 
-    this.succeed();
+    if (local.hasPath) {
+      // console.log("hey I can get there")
+      this.succeed();
+    } else {
+      // console.log("oh yeah no that's too far")
+      this.fail();
+    }
   }
 }

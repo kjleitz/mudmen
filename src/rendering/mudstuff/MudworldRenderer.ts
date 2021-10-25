@@ -27,8 +27,8 @@ export default class MudworldRenderer {
       fps,
     );
 
-    // const mudmanCoords = this.world.data.map.randomCoordsOnLand();
-    this.hero = new Mudman();
+    const mudmanCoords = this.world.data.map.randomCoordsOnLand();
+    this.hero = new Mudman(mudmanCoords[0], mudmanCoords[1]);
   }
 
   set fps(framesPerSecond: number) { this.viewportRenderer.fps = framesPerSecond }
