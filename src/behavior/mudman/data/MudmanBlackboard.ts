@@ -71,7 +71,6 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     const distanceToNode = distanceBetween(this.x, this.y, nextPathNode.x, nextPathNode.y);
     if (distanceToNode > moveSpeed) {
       this.moveToward(nextPathNode.x, nextPathNode.y, moveSpeed);
-      // nextPathNode.distanceTraveled = distanceToNode - moveSpeed;
     } else if (distanceToNode <= moveSpeed) {
       this.setCurrentPosition(nextPathNode.x, nextPathNode.y);
       path.pop();

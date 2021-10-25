@@ -9,9 +9,7 @@ export default class FollowPath extends LeafNode {
       return;
     }
 
-    // console.log("following...")
     local.followPath();
-    // console.log("followed.")
     if (!local.hasPath) this.succeed();
   }
 }

@@ -2,10 +2,6 @@ import BehaviorStatus from "@/behavior/base/BehaviorStatus";
 import Blackboard from "@/behavior/base/data/Blackboard";
 import BaseNode from "@/behavior/base/nodes/BaseNode";
 
-// const succeed = () => BehaviorStatus.SUCCESS;
-// const fail = () => BehaviorStatus.FAILURE;
-// const retry = () => BehaviorStatus.RUNNING;
-
 interface AnonymousNodeLambda<L extends Blackboard, W extends Blackboard> {
   (local: L, world: W): boolean | undefined | null;
 }

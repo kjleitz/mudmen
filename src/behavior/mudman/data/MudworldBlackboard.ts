@@ -9,24 +9,12 @@ export interface MudworldBlackboardData {
   timestamp: number;
   map: MudworldMap;
   items: ItemDatabase;
-  // itemLocations: Map<number, Map<number, Item>>;
-  // itemsByType: Record<ItemType, Item[]>;
 }
 
 export default class MudworldBlackboard extends Blackboard<MudworldBlackboardData> {
-  // If `this.dirty === true`, then there are unrendered changes that should be
-  // rendered. Not used for changes to the map itself, but for things like item
-  // positions, etc.
-  // public dirty: boolean;
-
   constructor(data: MudworldBlackboardData) {
     super(data);
-    // this.dirty = true;
   }
-
-  // findClosestItem(itemType: ItemType, x: number, y: number): Item | undefined {
-  //   return closestPositioned(x, y, this.data.itemsByType[itemType]);
-  // }
 }
 
 export const mudworldItems = new ItemDatabase();
@@ -40,15 +28,7 @@ for (let i = 0; i < 1000; i++) {
 }
 
 export const mudworld = new MudworldBlackboard({
-  timestamp: 0, // will have to be set by game loop
+  timestamp: 0,
   map: mudworldMap,
   items: mudworldItems,
-  // itemsByType: {
-  //   [ItemType.WATER]: [new Water(19, 13, 17)],
-  //   // [ItemType.SOMETHING]: [new Something(19, 13, 17)],
-  //   // [ItemType.ELSE]: [new Else(19, 13, 17)],
-  //   // [ItemType.ANOTHER]: [new Another(19, 13, 17)],
-  //   // [ItemType.THING]: [new Thing(19, 13, 17)],
-  //   // [ItemType.ETC]: [new Etc(19, 13, 17)],
-  // },
 });

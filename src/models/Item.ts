@@ -14,8 +14,7 @@ export default class Item {
   public x: number;
   public y: number;
   public held: boolean;
-
-  private _used: boolean = false;
+  public used: boolean;
 
   constructor(type: ItemType, x: number, y: number) {
     // this.id = uuid();
@@ -24,17 +23,7 @@ export default class Item {
     this.x = x;
     this.y = y;
     this.held = false;
-
-    // mudworld.data.itemsByType[type].push(this);
-  }
-
-  set used(used: boolean) {
-    // if (used) 
-    this._used = used;
-  }
-
-  get used(): boolean {
-    return this._used;
+    this.used = false;
   }
 
   use(_local: MudmanBlackboard): void {

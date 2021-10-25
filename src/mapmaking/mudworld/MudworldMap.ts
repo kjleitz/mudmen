@@ -35,10 +35,7 @@ export default class MudworldMap {
 
   constructor(rowCount: number, colCount: number) {
     this.grid = new Grid(rowCount, colCount, Uint32Array);
-    this.pathFinder = new PathFinder(
-      this.grid,
-      (x, y) => (!this.walkableAt(x, y) || x < 0 || y < 0 || x > this.width || y > this.height),
-    );
+    this.pathFinder = new PathFinder((x, y) => !this.walkableAt(x, y));
   }
 
   static fillWithTerrain(grid: Grid): void {
@@ -144,7 +141,7 @@ export default class MudworldMap {
   get tileHeight(): number { return TILE_HEIGHT }
 
   get width(): number { return this.colCount * this.tileWidth }
-  get height(): number { return this.colCount * this.tileHeight }
+  get height(): number { return this.rowCount * this.tileHeight }
 
   fillWithTerrain(): void {
     MudworldMap.fillWithTerrain(this.grid);
@@ -179,15 +176,6 @@ export default class MudworldMap {
 
   // NOTE: populates in reverse (end of list is start, beginning of list is dest)
   populatePath(path: PathNode[], startX: number, startY: number, destX: number, destY: number, eyesight: number): void {
-    // const { tileWidth, tileHeight } = this;
-
-    // this.pathFinder.populatePath(path, startX / tileWidth, startY / tileWidth, destX / tileWidth, destY / tileWidth, (pathNode) => {
-    //   pathNode.x *= tileWidth;
-    //   pathNode.y *= tileHeight;
-    //   pathNode.distanceTraveled *= tileWidth;
-    //   pathNode.distanceToEnd *= tileWidth;
-    //   pathNode.cost *= tileWidth; // maybe not necessary
-    // });
     this.pathFinder.populatePath(path, startX, startY, destX, destY, eyesight);
   }
 
@@ -198,7 +186,13 @@ export default class MudworldMap {
     );
   }
 
+  inBounds(x: number, y: number): boolean {
+    return 0 < x && 0 < y && x < this.width && y < this.height;
+  }
+
   walkableAt(x: number, y: number): boolean {
-    return MudworldMap.walkableFromTileValue(this.valueAt(x, y));
+    return this.inBounds(x, y)
+      ? MudworldMap.walkableFromTileValue(this.valueAt(x, y))
+      : false;
   }
 }

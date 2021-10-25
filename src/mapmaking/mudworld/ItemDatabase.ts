@@ -2,12 +2,10 @@ import Item, { ItemType } from "@/models/Item";
 import { distanceBetween } from "@/utilities/geo";
 
 export default class ItemDatabase {
-  // private locations: Map<number, Map<number, Item>>;
   private itemsById: Map<symbol, Item>;
   private idsByType: Map<ItemType, Set<symbol>>;
 
   constructor() {
-    // this.locations = new Map();
     this.itemsById = new Map();
     this.idsByType = new Map();
   }

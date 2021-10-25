@@ -1,3 +1,5 @@
+// This has been replaced wholesale with `FollowPath`.
+
 // import LeafNode from "@/behavior/base/nodes/LeafNode";
 // import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
 // import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
