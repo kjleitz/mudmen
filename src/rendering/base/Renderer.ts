@@ -9,7 +9,7 @@ export default class Renderer {
 
   private lastFrameAt: number = 0;
 
-  constructor(canvasEl: HTMLCanvasElement, width: number, height: number, fps: number = 24) {
+  constructor(canvasEl: HTMLCanvasElement, width: number, height: number, fps = 24) {
     this.canvas = canvasEl;    
     const ctx = this.canvas.getContext("2d");
     if (!ctx) throw new Error("CanvasRenderingContext2D not supported");

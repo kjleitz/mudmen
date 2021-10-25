@@ -41,5 +41,6 @@ export default class Mudman {
 
   tick(): void {
     this.behaviorTree.tick();
+    this.local.dehydrate(10);
   }
 }

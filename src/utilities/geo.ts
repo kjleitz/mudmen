@@ -1,8 +1,8 @@
 // NOTE: Coordinate system is locked to -32768...+32767 for x and y dimensions
 // TODO: Reconsider this
 
-type Coords = Int16Array;
-interface Position {
+export type Coords = Int16Array;
+export interface Position {
   x: number;
   y: number;
 }
@@ -43,4 +43,18 @@ export function closestPositioned<T extends Position>(x: number, y: number, list
   }
 
   return closestItem;
+}
+
+export function insideRect(
+  x: number,
+  y: number,
+  originX: number,
+  originY: number,
+  height: number,
+  width: number,
+): boolean {
+  return originX <= x
+    && x <= (originX + width)
+    && originY <= y
+    && y <= (originY + height);
 }

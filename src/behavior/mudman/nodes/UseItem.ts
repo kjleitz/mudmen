@@ -12,7 +12,7 @@ export default class UseItem extends BaseNode {
   }
 
   process(local: MudmanBlackboard, _world: MudworldBlackboard): void {
-    const heldItem = local.data.inventory.find(({ type, used }) => type === this.itemType && !used);
+    const heldItem = local.unusedFromInventory(this.itemType);
 
     if (heldItem && !heldItem.used) {
       heldItem.use(local);
