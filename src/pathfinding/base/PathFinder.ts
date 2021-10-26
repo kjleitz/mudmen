@@ -73,6 +73,8 @@ export default class PathFinder {
         return;
       }
 
+      if (current.distanceTraveled > (eyesight * 4)) return;
+
       walkedNodes.push(current);
 
       this.forEachNeighborOf(current.x, current.y, stepDistance, (x, y, distanceToTravel) => {

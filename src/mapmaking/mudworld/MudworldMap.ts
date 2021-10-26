@@ -25,7 +25,7 @@ export interface MudworldMapper<R = void> {
     moisture: number,
     structure: number,
     underwater: boolean,
-  ): R
+  ): R;
 }
 
 export default class MudworldMap {
