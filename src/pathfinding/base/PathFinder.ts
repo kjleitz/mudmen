@@ -51,10 +51,7 @@ export default class PathFinder {
       totalDistance = eyesight;
     }
 
-    if (this.cellBlocked(destX, destY)) {
-      console.log("um that destination is blocked");
-      return;
-    }
+    if (this.cellBlocked(destX, destY)) return;
 
     nodesToWalk.push(new PathNode(startX, startY, 0, totalDistance, null));
 
