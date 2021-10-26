@@ -9,6 +9,6 @@ export default class BasicNeeds extends DecoratorNode {
       new SatisfyThirst(),
       // new SatisfyHunger(),
       // new SatisfySleep(),
-    ]))
+    ]));
   }
 }

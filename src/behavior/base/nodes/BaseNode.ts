@@ -8,7 +8,7 @@ class BaseNode {
     /* implement on classes extending this one, if desired */
   }
 
-  process(local: Blackboard, world: Blackboard): void {
+  process(_local: Blackboard, _world: Blackboard): void {
     throw new Error("Method #process must be implemented by node classes.");
   }
 

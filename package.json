@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode production",
-    "build:watch": "webpack --mode development --watch"
+    "build:watch": "webpack --mode development --watch",
+    "start": "webpack serve --mode development",
+    "start:open": "webpack serve --mode development --open",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -24,15 +27,18 @@
   },
   "homepage": "https://github.com/kjleitz/mudmen#readme",
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "eslint": "^8.1.0",
     "fork-ts-checker-webpack-plugin": "^6.3.4",
+    "html-webpack-plugin": "^5.5.0",
     "ts-loader": "^9.2.6",
     "typescript": "^4.4.4",
     "webpack": "^5.58.2",
-    "webpack-cli": "^4.9.1"
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.3.1"
   },
   "dependencies": {
-    "@types/uuid": "^8.3.1",
-    "simplex-noise": "^3.0.0",
-    "uuid": "^8.3.2"
+    "simplex-noise": "^3.0.0"
   }
 }

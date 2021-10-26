@@ -1,6 +1,5 @@
 import { shuffleInPlace } from "@/utilities/collections";
 import BaseNode from "@/behavior/base/nodes/BaseNode";
-import Blackboard from "@/behavior/base/data/Blackboard";
 
 export interface CompositeNodeOptions {
   shuffle?: boolean;
@@ -11,7 +10,7 @@ export default class CompositeNode<
   Options extends CompositeNodeOptions = CompositeNodeOptions
 > extends BaseNode {
   public children: ChildNode[];
-  public shuffle: boolean = false;
+  public shuffle = false;
 
   constructor(...args: [options: Options, children: ChildNode[]]);
   constructor(...args: [children: ChildNode[]]);

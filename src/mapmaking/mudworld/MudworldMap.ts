@@ -5,7 +5,6 @@ import PathFinder, { PathNode } from "@/pathfinding/base/PathFinder";
 import { coords, Coords } from "@/utilities/geo";
 
 const TILE_WIDTH = 16;
-const TILE_HEIGHT = 16;
 
 export function to32Bits(value: number, place: number, bits: number) {
   return value << (31 - bits - place);
@@ -64,7 +63,7 @@ export default class MudworldMap {
         structure,
         underwater,
       );
-    })
+    });
   }
 
   static eachTile(grid: Grid, mapper: MudworldMapper<void>): void {
@@ -77,7 +76,7 @@ export default class MudworldMap {
         this.structureFromTileValue(val),
         this.underwaterFromTileValue(val),
       );
-    })
+    });
   }
 
   // Where `noiseModifier` is a value between -1 and 1 (exclusive), returns a
@@ -137,11 +136,10 @@ export default class MudworldMap {
   get rowCount(): number { return this.grid.rowCount }
   get colCount(): number { return this.grid.colCount }
 
-  get tileWidth(): number { return TILE_WIDTH }
-  get tileHeight(): number { return TILE_HEIGHT }
+  get tileSize(): number { return TILE_WIDTH }
 
-  get width(): number { return this.colCount * this.tileWidth }
-  get height(): number { return this.rowCount * this.tileHeight }
+  get width(): number { return this.colCount * this.tileSize }
+  get height(): number { return this.rowCount * this.tileSize }
 
   fillWithTerrain(): void {
     MudworldMap.fillWithTerrain(this.grid);
@@ -157,32 +155,32 @@ export default class MudworldMap {
     let y = 0;
     let elevation = -1;
 
-    while (elevation < 0) {
-      x = Math.random();
-      y = Math.random();
-      elevation = elevationNoise(x, y);
+    while (elevation < 129) {
+      x = Math.floor(Math.random() * width);
+      y = Math.floor(Math.random() * height);
+      elevation = MudworldMap.elevationFromTileValue(this.valueAt(x, y));
     }
 
-    return coords(Math.floor(x * width), Math.floor(y * height));
+    return coords(x, y);
   }
 
   // NOTE: This returns TILE coords, not world coords.
   randomTileCoordsOnLand(): Coords {
     const worldCoords = this.randomCoordsOnLand();
-    worldCoords[0] = Math.floor(worldCoords[0] / this.tileWidth);
-    worldCoords[1] = Math.floor(worldCoords[1] / this.tileHeight);
+    worldCoords[0] = Math.floor(worldCoords[0] / this.tileSize);
+    worldCoords[1] = Math.floor(worldCoords[1] / this.tileSize);
     return worldCoords;
   }
 
   // NOTE: populates in reverse (end of list is start, beginning of list is dest)
   populatePath(path: PathNode[], startX: number, startY: number, destX: number, destY: number, eyesight: number): void {
-    this.pathFinder.populatePath(path, startX, startY, destX, destY, eyesight);
+    this.pathFinder.populatePath(path, startX, startY, destX, destY, eyesight, this.tileSize);
   }
 
   valueAt(x: number, y: number): number {
     return this.grid.valueAt(
-      Math.floor(y / this.tileHeight),
-      Math.floor(x / this.tileWidth),
+      Math.floor(y / this.tileSize),
+      Math.floor(x / this.tileSize),
     );
   }
 

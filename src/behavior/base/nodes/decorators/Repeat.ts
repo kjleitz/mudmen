@@ -4,7 +4,7 @@ import DecoratorNode from "@/behavior/base/nodes/DecoratorNode";
 
 export default class Repeat<T extends BaseNode = BaseNode> extends DecoratorNode<T> {
   public times: number;
-  public repeated: number = 0;
+  public repeated = 0;
 
   // Repeats the given child node, ignoring whether it succeeds or fails. Once
   // finished, this node will succeed. If a number `times` is given, it will

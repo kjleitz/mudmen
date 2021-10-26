@@ -1,13 +1,10 @@
 import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
-import { mudworld } from "@/behavior/mudman/data/MudworldBlackboard";
-// import { uuid } from "@/utilities/generators";
 
 export const enum ItemType {
   WATER,
 }
 
 export default class Item {
-  // public readonly id: string;
   public readonly id: symbol;
 
   public type: ItemType;
@@ -17,7 +14,6 @@ export default class Item {
   public used: boolean;
 
   constructor(type: ItemType, x: number, y: number) {
-    // this.id = uuid();
     this.id = Symbol();
     this.type = type;
     this.x = x;
@@ -28,5 +24,5 @@ export default class Item {
 
   use(_local: MudmanBlackboard): void {
     this.used = true;
-  };
+  }
 }

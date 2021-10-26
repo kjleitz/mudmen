@@ -1,9 +1,7 @@
 import Blackboard from "@/behavior/base/data/Blackboard";
 import ItemDatabase from "@/mapmaking/mudworld/ItemDatabase";
 import MudworldMap from "@/mapmaking/mudworld/MudworldMap";
-import Item, { ItemType } from "@/models/Item";
 import Water from "@/models/items/Water";
-import { closestPositioned } from "@/utilities/geo";
 
 export interface MudworldBlackboardData {
   timestamp: number;
@@ -26,6 +24,9 @@ for (let i = 0; i < 1000; i++) {
   const coords = mudworldMap.randomCoordsOnLand();
   mudworldItems.add(new Water(25, coords[0], coords[1]));
 }
+
+// mudworldItems.add(new Water(25, 325, 300));
+// mudworldItems.add(new Water(25, 535, 300));
 
 export const mudworld = new MudworldBlackboard({
   timestamp: 0,

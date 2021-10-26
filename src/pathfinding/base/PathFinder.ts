@@ -1,3 +1,4 @@
+import { reverseFind } from "@/utilities/collections";
 import { distanceBetween } from "@/utilities/geo";
 
 export class PathNode {
@@ -36,6 +37,7 @@ export default class PathFinder {
     destX: number,
     destY: number,
     eyesight: number,
+    stepDistance: number,
     mapper?: (pathNode: PathNode) => void,
   ): void {
     this.reset();
@@ -49,7 +51,10 @@ export default class PathFinder {
       totalDistance = eyesight;
     }
 
-    if (this.cellBlocked(destX, destY)) return;
+    if (this.cellBlocked(destX, destY)) {
+      console.log("um that destination is blocked");
+      return;
+    }
 
     nodesToWalk.push(new PathNode(startX, startY, 0, totalDistance, null));
 
@@ -58,22 +63,30 @@ export default class PathFinder {
     while (nodesToWalk.length) {
       current = this.popLowestCostUnwalkedNode()!;
 
-      if (current.x === destX && current.y === destY) {
-        this.unchainIntoPath(current, path, mapper);
+      if (current.distanceToEnd < stepDistance) {
+        const destination = new PathNode(
+          destX,
+          destY,
+          current.distanceTraveled + current.distanceToEnd,
+          0,
+          current,
+        );
+
+        this.unchainIntoPath(destination, path, mapper);
         return;
       }
 
-      walkedNodes.push(current); // maybe goes after the neighbor iteration?
+      walkedNodes.push(current);
 
-      this.forEachNeighborOf(current.x, current.y, (x, y, distanceToTravel) => {
+      this.forEachNeighborOf(current.x, current.y, stepDistance, (x, y, distanceToTravel) => {
         if (this.cellBlocked(x, y)) return;
 
         const distanceTraveled = current.distanceTraveled + distanceToTravel;
-        const walkedNode = walkedNodes.find((walked) => walked.x === x && walked.y === y);
-        if (walkedNode && walkedNode.distanceTraveled >= distanceTraveled) return;
+        const walkedNode = reverseFind(walkedNodes, walked => walked.x === x && walked.y === y);
+        // if (walkedNode && walkedNode.distanceTraveled >= distanceTraveled) return;
         if (walkedNode) return;
 
-        const unwalkedNode = nodesToWalk.find((unwalked) => unwalked.x === x && unwalked.y === y);
+        const unwalkedNode = reverseFind(nodesToWalk, unwalked => unwalked.x === x && unwalked.y === y);
         if (unwalkedNode) {
           unwalkedNode.parent = current;
           unwalkedNode.distanceTraveled = distanceTraveled;
@@ -88,7 +101,7 @@ export default class PathFinder {
 
   // TODO: Might want to organize the unwalked nodes list by cost up front so we
   //       don't have to iterate over as many each time.
-  private popLowestCostUnwalkedNode = (): PathNode | undefined => {
+  private popLowestCostUnwalkedNode(): PathNode | undefined {
     const { nodesToWalk } = this;
 
     if (nodesToWalk.length === 0) return;
@@ -117,6 +130,7 @@ export default class PathFinder {
   private forEachNeighborOf(
     x: number,
     y: number,
+    stepDistance: number,
     // NOTE: distance will be 1 for cardinal directions and 1.414 (estimate of
     //       Math.sqrt(2) to avoid the calculation) for diagonals.
     mapper: (x: number, y: number, distance: number) => void,
@@ -125,48 +139,49 @@ export default class PathFinder {
     let nx: number;
 
     // const cardinalWeight = 16; // TODO: replace with dynamic tile size
-    const cardinalWeight = 1;
+    // const cardinalWeight = 1;
+    const cardinalWeight = stepDistance;
     const diagonalWeight = cardinalWeight * 1.4;
-  
+
     // === TOP ROW ===
-    ny = y - 1;
-  
+    ny = y - stepDistance;
+
     // top left
-    nx = x - 1;
+    nx = x - stepDistance;
     mapper(nx, ny, diagonalWeight);
-  
+
     // top
     nx = x;
     mapper(nx, ny, cardinalWeight);
-  
+
     // top right
-    nx = x + 1;
+    nx = x + stepDistance;
     mapper(nx, ny, diagonalWeight);
-  
+
     // === LEFT AND RIGHT SIDES ===
     ny = y;
-  
+
     // left
-    nx = x - 1;
+    nx = x - stepDistance;
     mapper(nx, ny, cardinalWeight);
-  
+
     // right
-    nx = x + 1;
+    nx = x + stepDistance;
     mapper(nx, ny, cardinalWeight);
-  
+
     // === BOTTOM ROW ===
-    ny = y + 1;
-  
+    ny = y + stepDistance;
+
     // bottom left
-    nx = x - 1;
+    nx = x - stepDistance;
     mapper(nx, ny, diagonalWeight);
-  
+
     // bottom
     nx = x;
     mapper(nx, ny, cardinalWeight);
-  
+
     // bottom right
-    nx = x + 1;
+    nx = x + stepDistance;
     mapper(nx, ny, diagonalWeight);
   }
 }

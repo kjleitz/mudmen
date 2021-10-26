@@ -9,7 +9,7 @@ export default class Log extends LeafNode {
     this.message = message;
   }
 
-  process(local: Blackboard, world: Blackboard): void {
+  process(_local: Blackboard, _world: Blackboard): void {
     console.log(this.message);
     this.succeed();
   }

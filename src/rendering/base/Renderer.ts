@@ -7,13 +7,13 @@ export default class Renderer {
   public ctx: CanvasRenderingContext2D;
   public fps: number;
 
-  private lastFrameAt: number = 0;
+  private lastFrameAt = 0;
 
   constructor(canvasEl: HTMLCanvasElement, width: number, height: number, fps = 24) {
-    this.canvas = canvasEl;    
+    this.canvas = canvasEl;
     const ctx = this.canvas.getContext("2d");
     if (!ctx) throw new Error("CanvasRenderingContext2D not supported");
-    
+
     this.setCanvasSize(width, height);
     this.ctx = ctx;
     this.fps = fps;
@@ -38,7 +38,7 @@ export default class Renderer {
     const loop = (timestamp: DOMHighResTimeStamp) => {
       requestAnimationFrame(loop);
       if (timestamp < this.nextFrameAt) return;
-      
+
       this.lastFrameAt = timestamp;
       draw(this.ctx, timestamp);
     };

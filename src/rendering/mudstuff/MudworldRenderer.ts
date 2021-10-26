@@ -29,6 +29,7 @@ export default class MudworldRenderer {
 
     const mudmanCoords = this.world.data.map.randomCoordsOnLand();
     this.hero = new Mudman(mudmanCoords[0], mudmanCoords[1]);
+    // this.hero = new Mudman(0, 0);
   }
 
   set fps(framesPerSecond: number) { this.viewportRenderer.fps = framesPerSecond }
@@ -39,40 +40,39 @@ export default class MudworldRenderer {
   get viewportWidth(): number { return this.viewportRenderer.canvas.width }
   get viewportHeight(): number { return this.viewportRenderer.canvas.height }
 
-  get tileWidth(): number { return this.world.data.map.tileWidth }
-  get tileHeight(): number { return this.world.data.map.tileHeight }
+  get tileSize(): number { return this.world.data.map.tileSize }
 
   drawWorld(): void {
     this.worldRenderer.drawOnce((ctx, _timestamp) => {
       ctx.clearRect(0, 0, this.worldWidth, this.worldHeight);
-      const { tileWidth, tileHeight } = this;
+      const { tileSize } = this;
       this.world.data.map.eachTile((row, col, elevation, moisture, structure, underwater) => {
         if (underwater) {
           ctx.fillStyle = "rgb(0, 100, 200)";
         } else {
           // TODO: have a set of pre-defined tile color/illustrations when each
           //       value is within a certain range
-          ctx.fillStyle = `rgb(${elevation}, ${moisture}, ${(elevation / 2).toFixed(0)})`
+          ctx.fillStyle = `rgb(${elevation}, ${moisture}, ${(elevation / 2).toFixed(0)})`;
         }
 
-        const x = col * tileWidth;
-        const y = row * tileHeight;
-        ctx.fillRect(x, y, tileWidth, tileHeight);
-  
+        const x = col * tileSize;
+        const y = row * tileSize;
+        ctx.fillRect(x, y, tileSize, tileSize);
+
         ctx.strokeStyle = "rgba(0, 0, 0, 0.125)";
-        ctx.strokeRect(x, y, tileWidth, tileHeight);
+        ctx.strokeRect(x, y, tileSize, tileSize);
       });
     });
   }
 
   drawLoop(): void {
     const { viewportWidth, viewportHeight } = this;
-    this.viewportRenderer.drawLoop((ctx, timestamp) => {
+    this.viewportRenderer.drawLoop((ctx, _timestamp) => {
       ctx.clearRect(0, 0, viewportWidth, viewportHeight);
-    
+
       const viewportOriginX = this.hero.local.x - (viewportWidth / 2);
       const viewportOriginY = this.hero.local.y - (viewportHeight / 2);
-    
+
       ctx.drawImage(
         this.worldRenderer.canvas,
         viewportOriginX, viewportOriginY,
@@ -80,7 +80,7 @@ export default class MudworldRenderer {
         0, 0,
         viewportWidth, viewportHeight,
       );
-    
+
       ctx.fillStyle = "red";
       ctx.fillRect((viewportWidth / 2) - 5, (viewportHeight / 2) - 5, 10, 10);
 
@@ -102,9 +102,9 @@ export default class MudworldRenderer {
         const y = item.y - viewportOriginY;
 
         ctx.fillStyle = "blueviolet";
-        ctx.fillRect(x - 4, y - 4, 8, 8)
+        ctx.fillRect(x - 4, y - 4, 8, 8);
       });
-    
+
       this.hero.tick();
     });
   }

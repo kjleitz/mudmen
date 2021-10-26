@@ -15,7 +15,7 @@ export interface MudmanData {
 
 export default class MudmanBlackboard extends Blackboard<MudmanData> {
   constructor(data?: MudmanData) {
-    super(data ?? MudmanBlackboard.defaults)
+    super(data ?? MudmanBlackboard.defaults);
   }
 
   static get defaults(): MudmanData {
@@ -74,16 +74,16 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     } else if (distanceToNode <= moveSpeed) {
       this.setCurrentPosition(nextPathNode.x, nextPathNode.y);
       path.pop();
-      this.followPath(moveSpeed - distanceToNode)
+      this.followPath(moveSpeed - distanceToNode);
     }
   }
 
   dehydrate(amount = 1): void {
-    this.data.hydration = Math.max(this.data.hydration - amount, 0)
+    this.data.hydration = Math.max(this.data.hydration - amount, 0);
   }
 
   hydrate(amount = 1): void {
-    this.data.hydration = Math.min(this.data.hydration + amount, 100)
+    this.data.hydration = Math.min(this.data.hydration + amount, 100);
   }
 
   inventoryOf(itemType: ItemType): Set<Item> {
