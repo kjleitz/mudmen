@@ -1,12 +1,13 @@
 import Blackboard from "@/behavior/base/data/Blackboard";
 import Item, { ItemType } from "@/models/Item";
 import { PathNode } from "@/pathfinding/base/PathFinder";
-import { distanceBetween, vectorBetween } from "@/utilities/geo";
+import { Coords, distanceBetween, vectorBetween } from "@/utilities/geo";
 
 export interface MudmanData {
   currentX: number;
   currentY: number;
   path: PathNode[];
+  unreachable: Coords[];
   moveSpeed: number;
   hydration: number;
   eyesight: number;
@@ -23,6 +24,7 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       currentX: 0,
       currentY: 0,
       path: [],
+      unreachable: [],
       moveSpeed: 10,
       hydration: 10,
       // eyesight: 200,

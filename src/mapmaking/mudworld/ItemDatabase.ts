@@ -50,31 +50,14 @@ export default class ItemDatabase {
     }
   }
 
-  findClosest(itemType: ItemType, x: number, y: number): Item | undefined {
+  findClosest(itemType: ItemType, x: number, y: number, filter?: (item: Item) => boolean): Item | undefined {
     let closestItem: Item | undefined = undefined;
     let closestDistance: number;
 
     this.forEachOfType(itemType, (item) => {
       if (item.held) return;
+      if (filter && !filter(item)) return;
 
-      const distance = distanceBetween(x, y, item.x, item.y);
-      closestItem ??= item;
-      closestDistance ??= distance;
-
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestItem = item;
-      }
-    });
-
-    return closestItem;
-  }
-
-  findClosestUnused(itemType: ItemType, x: number, y: number): Item | undefined {
-    let closestItem: Item | undefined = undefined;
-    let closestDistance: number;
-
-    this.forEachOfType(itemType, (item) => {
       const distance = distanceBetween(x, y, item.x, item.y);
       closestItem ??= item;
       closestDistance ??= distance;
