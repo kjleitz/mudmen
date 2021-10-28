@@ -3,9 +3,21 @@ import MudworldRenderer from "@/rendering/mudstuff/MudworldRenderer";
 
 window.addEventListener("DOMContentLoaded", () => {
   const viewportCanvas = document.getElementById("viewport") as HTMLCanvasElement;
+  // document.body.tabIndex = 0;
+  // document.body.focus();
   const renderer = new MudworldRenderer(viewportCanvas, mudworld, 24);
   renderer.drawWorld();
+  renderer.drawSpace();
   renderer.drawLoop();
+
+  document.body.addEventListener("keydown", (event) => {
+    // console.log(event);
+    if (event.key === "ArrowRight") {
+      renderer.nextHero();
+    } else if (event.key === "ArrowLeft") {
+      renderer.prevHero();
+    }
+  });
 
   // TODO: remove
   (window as any).renderer = renderer;

@@ -29,6 +29,7 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       hydration: 10,
       // eyesight: 200,
       eyesight: 300,
+      // eyesight: 15,
       inventory: new Map(),
     };
   }
@@ -37,6 +38,7 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   get y(): number { return this.data.currentY }
 
   get hasPath(): boolean { return this.data.path.length > 0 }
+  get destination(): PathNode | undefined { return this.data.path[this.data.path.length - 1] }
 
   setCurrentPosition(x: number, y: number): void {
     this.data.currentX = Math.floor(x);
@@ -112,5 +114,15 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       if (!entry.value.used) return entry.value;
       entry = itemsIterator.next();
     }
+  }
+
+  isUnreachable(x: number, y: number): boolean {
+    // return distanceBetween(this.x, this.y, x, y) > this.data.eyesight
+    //   || !!this.data.unreachable.find((coords) => coords[0] === x && coords[1] === y);
+    return !!this.data.unreachable.find((coords) => coords[0] === x && coords[1] === y);
+  }
+
+  isWithinEyesight(x: number, y: number): boolean {
+    return distanceBetween(this.x, this.y, x, y) <= this.data.eyesight;
   }
 }

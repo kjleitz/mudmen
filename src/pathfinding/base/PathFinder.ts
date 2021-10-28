@@ -30,6 +30,10 @@ export default class PathFinder {
 
   // NOTE: Populates path array in reverse (end of the list is the start of the
   // path, beginning of the list is the destination).
+  //
+  // NB: Something weird happening? See if any coordinates in your system/calcs
+  //     are non-integer values.
+  //
   populatePath(
     path: PathNode[],
     startX: number,
@@ -41,17 +45,26 @@ export default class PathFinder {
     mapper?: (pathNode: PathNode) => void,
   ): void {
     this.reset();
+    startX = Math.floor(startX);
+    startY = Math.floor(startY);
+    destX = Math.floor(destX);
+    destY = Math.floor(destY);
+    stepDistance = Math.floor(stepDistance);
+    // console.log("RESET");
 
     const { nodesToWalk, walkedNodes } = this;
     let totalDistance = distanceBetween(startX, startY, destX, destY);
+    // console.log(totalDistance);
 
     if (totalDistance > eyesight) {
       destX = Math.floor(startX + ((destX - startX) * (eyesight / totalDistance)));
       destY = Math.floor(startY + ((destY - startY) * (eyesight / totalDistance)));
       totalDistance = eyesight;
     }
+    // console.log(2);
 
     if (this.cellBlocked(destX, destY)) return;
+    // console.log(3);
 
     nodesToWalk.push(new PathNode(startX, startY, 0, totalDistance, null));
 
@@ -59,8 +72,9 @@ export default class PathFinder {
 
     while (nodesToWalk.length) {
       current = this.popLowestCostUnwalkedNode()!;
+      // console.log(4, nodesToWalk.length);
 
-      if (current.distanceToEnd < stepDistance) {
+      if (current.distanceToEnd <= stepDistance) {
         const destination = new PathNode(
           destX,
           destY,
@@ -69,28 +83,38 @@ export default class PathFinder {
           current,
         );
 
+        // console.log(5);
         this.unchainIntoPath(destination, path, mapper);
         return;
       }
 
+      // console.log(6);
       if (current.distanceTraveled > (eyesight * 4)) return;
+      // console.log(7);
 
       walkedNodes.push(current);
 
       this.forEachNeighborOf(current.x, current.y, stepDistance, (x, y, distanceToTravel) => {
+        // console.log(8);
         if (this.cellBlocked(x, y)) return;
+        // console.log(9);
 
         const distanceTraveled = current.distanceTraveled + distanceToTravel;
         const walkedNode = reverseFind(walkedNodes, walked => walked.x === x && walked.y === y);
+        // console.log(10);
         // if (walkedNode && walkedNode.distanceTraveled >= distanceTraveled) return;
         if (walkedNode) return;
 
+        // console.log(11);
         const unwalkedNode = reverseFind(nodesToWalk, unwalked => unwalked.x === x && unwalked.y === y);
+        // console.log(12);
         if (unwalkedNode) {
+          // console.log(13);
           unwalkedNode.parent = current;
           unwalkedNode.distanceTraveled = distanceTraveled;
           unwalkedNode.cost = distanceTraveled + unwalkedNode.distanceToEnd;
         } else {
+          // console.log(14);
           const distanceToEnd = distanceBetween(x, y, destX, destY);
           nodesToWalk.push(new PathNode(x, y, distanceTraveled, distanceToEnd, current));
         }
@@ -140,7 +164,8 @@ export default class PathFinder {
     // const cardinalWeight = 16; // TODO: replace with dynamic tile size
     // const cardinalWeight = 1;
     const cardinalWeight = stepDistance;
-    const diagonalWeight = cardinalWeight * 1.4;
+    // const diagonalWeight = cardinalWeight * 1.4;
+    const diagonalWeight = cardinalWeight * 1.4142135623730951;
 
     // === TOP ROW ===
     ny = y - stepDistance;

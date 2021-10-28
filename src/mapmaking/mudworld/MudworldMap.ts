@@ -1,10 +1,10 @@
 import Grid from "@/mapmaking/base/Grid";
-import elevationNoise from "@/mapmaking/mudworld/noise/elevationNoise";
-import moistureNoise from "@/mapmaking/mudworld/noise/moistureNoise";
+import elevationNoise from "@/mapmaking/mudworld/generators/elevationNoise";
+import moistureNoise from "@/mapmaking/mudworld/generators/moistureNoise";
 import PathFinder, { PathNode } from "@/pathfinding/base/PathFinder";
 import { coords, Coords } from "@/utilities/geo";
 
-const TILE_WIDTH = 16;
+// const TILE_WIDTH = 16;
 
 export function to32Bits(value: number, place: number, bits: number) {
   return value << (31 - bits - place);
@@ -31,8 +31,10 @@ export interface MudworldMapper<R = void> {
 export default class MudworldMap {
   public grid: Grid<Uint32Array>;
   public pathFinder: PathFinder;
+  public tileSize: number;
 
-  constructor(rowCount: number, colCount: number) {
+  constructor(rowCount: number, colCount: number, tileSize: number) {
+    this.tileSize = tileSize;
     this.grid = new Grid(rowCount, colCount, Uint32Array);
     this.pathFinder = new PathFinder((x, y) => !this.walkableAt(x, y));
   }
@@ -77,6 +79,64 @@ export default class MudworldMap {
         this.underwaterFromTileValue(val),
       );
     });
+  }
+
+  static feedMapper<T>(grid: Grid, row: number, col: number, mapper: MudworldMapper<T>): T {
+    const value = grid.valueAt(row, col);
+    return mapper(
+      row,
+      col,
+      this.elevationFromTileValue(value),
+      this.moistureFromTileValue(value),
+      this.structureFromTileValue(value),
+      this.underwaterFromTileValue(value),
+    );
+  }
+
+  static eachNeighboringTile(grid: Grid, row: number, col: number, mapper: MudworldMapper<void>): void {
+    let nRow: number;
+    let nCol: number;
+
+    // === TOP ROW ===
+    nRow = row - 1;
+
+    // top left
+    nCol = col - 1;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
+
+    // top
+    nCol = col;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
+
+    // top right
+    nCol = col + 1;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
+
+    // === LEFT AND RIGHT SIDES ===
+    nRow = row;
+
+    // left
+    nCol = col - 1;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
+
+    // right
+    nCol = col + 1;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
+
+    // === BOTTOM ROW ===
+    nRow = row + 1;
+
+    // bottom left
+    nCol = col - 1;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
+
+    // bottom
+    nCol = col;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
+
+    // bottom right
+    nCol = col + 1;
+    MudworldMap.feedMapper(grid, nRow, nCol, mapper);
   }
 
   // Where `noiseModifier` is a value between -1 and 1 (exclusive), returns a
@@ -136,10 +196,18 @@ export default class MudworldMap {
   get rowCount(): number { return this.grid.rowCount }
   get colCount(): number { return this.grid.colCount }
 
-  get tileSize(): number { return TILE_WIDTH }
+  // get tileSize(): number { return TILE_WIDTH }
 
   get width(): number { return this.colCount * this.tileSize }
   get height(): number { return this.rowCount * this.tileSize }
+
+  xToCol(x: number): number {
+    return Math.floor(x / this.tileSize);
+  }
+
+  yToRow(y: number): number {
+    return Math.floor(y / this.tileSize);
+  }
 
   fillWithTerrain(): void {
     MudworldMap.fillWithTerrain(this.grid);
@@ -147,6 +215,10 @@ export default class MudworldMap {
 
   eachTile(mapper: MudworldMapper<void>): void {
     MudworldMap.eachTile(this.grid, mapper);
+  }
+
+  eachNeighboringTile(row: number, col: number, mapper: MudworldMapper<void>): void {
+    MudworldMap.eachNeighboringTile(this.grid, row, col, mapper);
   }
 
   randomCoordsOnLand(): Coords {
@@ -178,10 +250,7 @@ export default class MudworldMap {
   }
 
   valueAt(x: number, y: number): number {
-    return this.grid.valueAt(
-      Math.floor(y / this.tileSize),
-      Math.floor(x / this.tileSize),
-    );
+    return this.grid.valueAt(this.yToRow(y), this.xToCol(x));
   }
 
   inBounds(x: number, y: number): boolean {
@@ -192,5 +261,9 @@ export default class MudworldMap {
     return this.inBounds(x, y)
       ? MudworldMap.walkableFromTileValue(this.valueAt(x, y))
       : false;
+  }
+
+  underwaterAt(x: number, y: number): boolean {
+    return MudworldMap.underwaterFromTileValue(this.valueAt(x, y));
   }
 }
