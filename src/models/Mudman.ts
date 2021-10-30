@@ -33,12 +33,13 @@ export default class Mudman {
 
   private behaviorTree: BehaviorTree;
 
-  constructor(x?: number, y?: number, eyesight?: number) {
+  constructor(x?: number, y?: number, eyesight?: number, size?: number) {
     const behavior = new MudmanBehavior();
     const data = MudmanBlackboard.defaults;
     if (x || x === 0) data.currentX = x;
     if (y || y === 0) data.currentY = y;
     if (eyesight || eyesight === 0) data.eyesight = eyesight;
+    if (size) data.size = size;
     this.local = new MudmanBlackboard(data);
     this.behaviorTree = new BehaviorTree(behavior, this.local, mudworld);
   }

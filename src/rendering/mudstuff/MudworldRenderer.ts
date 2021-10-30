@@ -42,10 +42,8 @@ export default class MudworldRenderer {
       fps,
     );
 
-    this.mudmanRenderer = new MudmanRenderer(16, fps);
-    // this.mudmanRenderer = new MudmanRenderer(24, fps);
-    // this.mudmanRenderer = new MudmanRenderer(36, fps);
-    // this.mudmanRenderer = new MudmanRenderer(48, fps);
+    const mudmanSize = 16;
+    this.mudmanRenderer = new MudmanRenderer(mudmanSize, fps);
 
     const createMudman = (x?: number, y?: number) => {
       if (typeof x !== "number" || typeof y !== "number") {
@@ -54,12 +52,13 @@ export default class MudworldRenderer {
         y = mudmanCoords[1];
       }
 
-      const mudman = new Mudman(x, y, 20 * this.world.data.map.tileSize);
+      const mudman = new Mudman(x, y, 20 * this.world.data.map.tileSize, mudmanSize);
       this.world.data.mudmen.push(mudman);
     };
 
     createMudman(350, 200);
-    const population = 100;
+    // const population = 100;
+    const population = 0;
     for (let i = 0; i < population; i++) {
       createMudman();
     }
@@ -785,7 +784,7 @@ export default class MudworldRenderer {
         viewportWidth, viewportHeight,
       );
 
-      // items
+      // items (water)
       this.world.data.items.forEachOfType(ItemType.WATER, (item) => {
         if (item.used || item.held) return;
 
@@ -804,6 +803,26 @@ export default class MudworldRenderer {
         const y = item.y - viewportOriginY;
 
         ctx.fillStyle = "blueviolet";
+        ctx.fillRect(x - 4, y - 4, 8, 8);
+      });
+
+      // items (fire)
+      this.world.data.items.forEachOfType(ItemType.FIRE, (item) => {
+        const inView = insideRect(
+          item.x,
+          item.y,
+          viewportOriginX,
+          viewportOriginY,
+          viewportWidth,
+          viewportHeight,
+        );
+
+        if (!inView) return;
+
+        const x = item.x - viewportOriginX;
+        const y = item.y - viewportOriginY;
+
+        ctx.fillStyle = "red";
         ctx.fillRect(x - 4, y - 4, 8, 8);
       });
 

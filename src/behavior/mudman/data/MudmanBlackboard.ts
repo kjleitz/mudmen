@@ -8,6 +8,7 @@ export interface MudmanData {
   currentY: number;
   path: PathNode[];
   unreachable: Coords[];
+  size: number;
   moveSpeed: number;
   hydration: number;
   eyesight: number;
@@ -28,6 +29,7 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       currentY: 0,
       path: [],
       unreachable: [],
+      size: 16,
       moveSpeed: 5,
       hydration: 10,
       // eyesight: 200,
@@ -44,7 +46,19 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   get y(): number { return this.data.currentY }
 
   get hasPath(): boolean { return this.data.path.length > 0 }
-  get destination(): PathNode | undefined { return this.data.path[this.data.path.length - 1] }
+  // get destination(): PathNode | undefined { return this.data.path[this.data.path.length - 1] }
+  get destination(): PathNode | undefined { return this.data.path[0] }
+
+  get isNearDestination(): boolean {
+    const { destination } = this;
+    // console.log("destination:", destination);
+    // if (destination) console.log("isNear:", this.isNear(destination.x, destination.y));
+    return destination ? this.isNear(destination.x, destination.y) : true;
+  }
+
+  clearPath(): void {
+    this.data.path.length = 0;
+  }
 
   setCurrentPosition(x: number, y: number): void {
     const oldX = this.data.currentX;
@@ -144,5 +158,10 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
 
   isWithinEyesight(x: number, y: number): boolean {
     return distanceBetween(this.x, this.y, x, y) <= this.data.eyesight;
+  }
+
+  isNear(x: number, y: number): boolean {
+    // const distance = distanceBetween(this.x, this.y, x, y);
+    return distanceBetween(this.x, this.y, x, y) <= (5 * this.data.moveSpeed);
   }
 }

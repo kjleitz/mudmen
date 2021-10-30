@@ -10,7 +10,7 @@ export default class Water extends Item {
   }
 
   use(local: MudmanBlackboard): void {
+    super.use(local);
     local.hydrate(this.volume);
-    this.used = true;
   }
 }

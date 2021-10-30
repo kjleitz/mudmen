@@ -815,6 +815,14 @@ export default class MudmanRenderer {
       }
 
       spriteId = spriteIds[cyclePosition];
+    } else if (mudman.local.data.sitting) {
+      if (xDirection === 0) {
+        spriteId = yDirection < 0 ? MudmanSprite.SITTING_BACK : MudmanSprite.SITTING_FRONT;
+      } else if (xDirection < 0) {
+        spriteId = yDirection < 0 ? MudmanSprite.SITTING_LEFT_BACK : MudmanSprite.SITTING_LEFT_FRONT;
+      } else {
+        spriteId = yDirection < 0 ? MudmanSprite.SITTING_RIGHT_BACK : MudmanSprite.SITTING_RIGHT_FRONT;
+      }
     } else {
       if (xDirection === 0) {
         spriteId = yDirection < 0 ? MudmanSprite.STANDING_BACK : MudmanSprite.STANDING_FRONT;

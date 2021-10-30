@@ -1,6 +1,7 @@
 import Blackboard from "@/behavior/base/data/Blackboard";
 import ItemDatabase from "@/mapmaking/mudworld/ItemDatabase";
 import MudworldMap from "@/mapmaking/mudworld/MudworldMap";
+import Fire from "@/models/items/Fire";
 import Water from "@/models/items/Water";
 import Mudman from "@/models/Mudman";
 
@@ -67,6 +68,13 @@ for (let i = 0; i < WATERS; i++) {
   mudworldItems.add(new Water(25, coords[0], coords[1]));
 }
 
+const FIRES = 1000;
+
+for (let i = 0; i < FIRES; i++) {
+  const coords = mudworldMap.randomCoordsOnLand();
+  mudworldItems.add(new Fire(coords[0], coords[1]));
+}
+
 // mudworldItems.add(new Water(25, 325, 300));
 // mudworldItems.add(new Water(25, 535, 300));
 
@@ -75,6 +83,7 @@ export const mudworld = new MudworldBlackboard({
   map: mudworldMap,
   items: mudworldItems,
   mudmen: [],
+  dayLength: 12000,
   // dayLength: 24000,
-  dayLength: 48000,
+  // dayLength: 48000,
 });

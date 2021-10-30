@@ -2,6 +2,7 @@ import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
 
 export const enum ItemType {
   WATER,
+  FIRE,
 }
 
 export default class Item {
