@@ -12,6 +12,9 @@ export interface MudmanData {
   hydration: number;
   eyesight: number;
   inventory: Map<ItemType, Set<Item>>;
+  xDirection: number;
+  yDirection: number;
+  sitting: boolean;
 }
 
 export default class MudmanBlackboard extends Blackboard<MudmanData> {
@@ -25,12 +28,15 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       currentY: 0,
       path: [],
       unreachable: [],
-      moveSpeed: 10,
+      moveSpeed: 5,
       hydration: 10,
       // eyesight: 200,
       eyesight: 300,
       // eyesight: 15,
       inventory: new Map(),
+      xDirection: 1,
+      yDirection: 1,
+      sitting: false,
     };
   }
 
@@ -41,8 +47,22 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   get destination(): PathNode | undefined { return this.data.path[this.data.path.length - 1] }
 
   setCurrentPosition(x: number, y: number): void {
-    this.data.currentX = Math.floor(x);
-    this.data.currentY = Math.floor(y);
+    const oldX = this.data.currentX;
+    const oldY = this.data.currentY;
+
+    x = Math.floor(x);
+    y = Math.floor(y);
+
+    if (oldX === x) {
+      if (oldY !== y) this.data.xDirection = 0;
+    } else {
+      this.data.xDirection = oldX < x ? 1 : -1;
+    }
+
+    if (oldY !== y) this.data.yDirection = oldY < y ? 1 : -1;
+
+    this.data.currentX = x;
+    this.data.currentY = y;
   }
 
   moveToward(x: number, y: number, speed?: number): void {

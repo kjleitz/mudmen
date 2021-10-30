@@ -254,7 +254,7 @@ export default class MudworldMap {
   }
 
   inBounds(x: number, y: number): boolean {
-    return 0 < x && 0 < y && x < this.width && y < this.height;
+    return 0 <= x && 0 <= y && x < this.width && y < this.height;
   }
 
   walkableAt(x: number, y: number): boolean {
@@ -264,6 +264,7 @@ export default class MudworldMap {
   }
 
   underwaterAt(x: number, y: number): boolean {
-    return MudworldMap.underwaterFromTileValue(this.valueAt(x, y));
+    return MudworldMap.underwaterFromTileValue(this.valueAt(x, y))
+      || !this.inBounds(x, y);
   }
 }

@@ -9,16 +9,53 @@ export interface MudworldBlackboardData {
   map: MudworldMap;
   items: ItemDatabase;
   mudmen: Mudman[];
+  dayLength: number;
 }
 
 export default class MudworldBlackboard extends Blackboard<MudworldBlackboardData> {
   constructor(data: MudworldBlackboardData) {
     super(data);
   }
+
+  // Value between 0 (inclusive) and 1 (exclusive); percent of the day that has
+  // elapsed. 0 and 1 are midnight, 0.5 is noon.
+  get dayElapsed(): number {
+    const { timestamp, dayLength } = this.data;
+    // return (timestamp % dayLength) / dayLength;
+    return ((timestamp + 0.25 * dayLength) % dayLength) / dayLength;
+    // return ((timestamp + (0.5 * dayLength)) % dayLength) / dayLength;
+  }
+
+  get isDawn(): boolean {
+    const { dayElapsed } = this;
+    return 0.2 <= dayElapsed && dayElapsed <= 0.3;
+  }
+
+  get isDay(): boolean {
+    const { dayElapsed } = this;
+    return 0.25 <= dayElapsed && dayElapsed <= 0.75;
+  }
+
+  get isDusk(): boolean {
+    const { dayElapsed } = this;
+    return 0.7 <= dayElapsed && dayElapsed <= 0.8;
+  }
+
+  get isNight(): boolean {
+    return !this.isDay;
+  }
+
+  // Value between 0 and 1; percent sunlight. 0 for most of the night, 1 for
+  // most of the day, and in between during the transitions.
+  get daylight(): number {
+    if (this.isDawn) return (this.dayElapsed - 0.2) / 0.1;
+    if (this.isDusk) return 1 - ((this.dayElapsed - 0.7) / 0.1);
+    return this.isDay ? 1 : 0;
+  }
 }
 
 export const mudworldItems = new ItemDatabase();
-export const mudworldMap = new MudworldMap(512, 512, 4);
+export const mudworldMap = new MudworldMap(512, 512, 32);
 
 mudworldMap.fillWithTerrain();
 
@@ -38,4 +75,6 @@ export const mudworld = new MudworldBlackboard({
   map: mudworldMap,
   items: mudworldItems,
   mudmen: [],
+  // dayLength: 24000,
+  dayLength: 48000,
 });
