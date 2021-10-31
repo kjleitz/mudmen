@@ -45,6 +45,7 @@ export default class PathFinder {
     mapper?: (pathNode: PathNode) => void,
   ): void {
     this.reset();
+    path.length = 0;
     startX = Math.floor(startX);
     startY = Math.floor(startY);
     destX = Math.floor(destX);

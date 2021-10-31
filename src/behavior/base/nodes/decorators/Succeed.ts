@@ -9,7 +9,7 @@ export default class Succeed<T extends BaseNode = BaseNode> extends DecoratorNod
   }
 
   process(local: Blackboard, world: Blackboard): void {
-    this.child.process(local, world);
+    this.child.run(local, world);
     this.succeed();
   }
 }

@@ -19,6 +19,6 @@ export default class BehaviorTree<
   }
 
   tick(): void {
-    this.current.process(this.local, this.world);
+    this.current.run(this.local, this.world);
   }
 }

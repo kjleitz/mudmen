@@ -17,7 +17,7 @@ export default class None<T extends BaseNode> extends CompositeNode<T> {
 
     for (let i = 0; i < this.children.length; i++) {
       const child = this.children[i];
-      child.process(local, world);
+      child.run(local, world);
 
       if (child.succeeded) this.fail();
       if (child.running || this.failed) return;

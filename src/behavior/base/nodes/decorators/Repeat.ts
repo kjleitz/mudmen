@@ -29,7 +29,7 @@ export default class Repeat<T extends BaseNode = BaseNode> extends DecoratorNode
       this.succeed();
     } else {
       this.child.reset();
-      this.child.process(local, world);
+      this.child.run(local, world);
       this.repeated += 1;
     }
   }

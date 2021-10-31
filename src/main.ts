@@ -6,9 +6,10 @@ window.addEventListener("DOMContentLoaded", () => {
   // document.body.tabIndex = 0;
   // document.body.focus();
   const renderer = new MudworldRenderer(viewportCanvas, mudworld, 24);
-  renderer.drawWorld();
-  renderer.drawSpace();
-  renderer.drawLoop();
+  // renderer.drawWorld();
+  // renderer.drawSpace();
+  // renderer.drawLoop();
+  renderer.start();
 
   document.body.addEventListener("keydown", (event) => {
     // console.log(event);

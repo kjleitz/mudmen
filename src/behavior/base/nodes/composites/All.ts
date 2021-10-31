@@ -17,7 +17,7 @@ export default class All<T extends BaseNode> extends CompositeNode<T> {
 
     for (let i = 0; i < this.children.length; i++) {
       const child = this.children[i];
-      child.process(local, world);
+      child.run(local, world);
 
       if (child.failed) this.fail();
       if (child.running || this.failed) return;

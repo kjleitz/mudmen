@@ -3,7 +3,7 @@ import snowiness from "@/mapmaking/mudworld/generators/snowiness";
 import { ItemType } from "@/models/Item";
 import Mudman from "@/models/Mudman";
 import Renderer from "@/rendering/base/Renderer";
-import { BLACK } from "@/rendering/mudstuff/colors";
+import { BLACK, BLUE, DARK_SLATE_GRAY, PALE_VIOLET_RED, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
 import MudmanRenderer from "@/rendering/mudstuff/MudmanRenderer";
 import { Shoreline, shorelineAt, shorelineHasLand } from "@/rendering/mudstuff/Shoreline";
 import { insideRect } from "@/utilities/geo";
@@ -12,6 +12,7 @@ export default class MudworldRenderer {
   public worldRenderer: Renderer;
   public viewportRenderer: Renderer;
   public spaceRenderer: Renderer;
+  public hudRenderer: Renderer;
   public mudmanRenderer: MudmanRenderer;
   public world: MudworldBlackboard;
   // public hero: Mudman;
@@ -40,6 +41,13 @@ export default class MudworldRenderer {
       viewportCanvas.width,
       viewportCanvas.height,
       fps,
+    );
+
+    this.hudRenderer = new Renderer(
+      document.createElement("canvas"),
+      viewportCanvas.width,
+      viewportCanvas.height,
+      6,
     );
 
     const mudmanSize = 16;
@@ -702,6 +710,46 @@ export default class MudworldRenderer {
     });
   }
 
+  drawHud(): void {
+    const { tileSize, viewportWidth, viewportHeight } = this;
+    const hydrationWidth = Math.floor(tileSize / 4);
+    const hydrationHeight = Math.floor(tileSize * 1.5);
+    const hydrationCenterX = viewportWidth - Math.floor(tileSize / 2);
+    const hydrationRightX = hydrationCenterX + Math.floor(hydrationWidth / 2);
+    const hydrationLeftX = hydrationCenterX - Math.floor(hydrationWidth / 2);
+    const hydrationTopY = Math.floor(tileSize / 2);
+    const hydrationBottomY = hydrationTopY + hydrationHeight;
+    const hydrationRadius = Math.floor(hydrationWidth / 2);
+    const hydrationFillTopY = hydrationTopY - hydrationRadius;
+    const hydrationFillHeight = hydrationHeight + (2 * hydrationRadius);
+    const hydrationFillBottomY = hydrationFillTopY + hydrationFillHeight;
+
+    const hydrationBar = new Path2D();
+    hydrationBar.arc(hydrationCenterX, hydrationTopY, hydrationRadius, Math.PI, 0);
+    hydrationBar.lineTo(hydrationRightX, hydrationBottomY);
+    hydrationBar.arc(hydrationCenterX, hydrationBottomY, hydrationRadius, 0, Math.PI);
+    hydrationBar.lineTo(hydrationLeftX, hydrationTopY);
+
+    this.hudRenderer.drawOnce((ctx, _timestamp) => {
+      ctx.clip(hydrationBar);
+    });
+
+    this.hudRenderer.drawLoop((ctx, _timestamp) => {
+      ctx.clearRect(0, 0, viewportWidth, viewportHeight);
+
+      const hydrationFillBarHeight = Math.floor(this.hero.local.percentHydrated * hydrationFillHeight);
+      const hydrationFillBarTopY = hydrationFillBottomY - hydrationFillBarHeight;
+
+      ctx.fillStyle = SHADOW_QUARTER;
+      ctx.fill(hydrationBar);
+
+      ctx.fillStyle = BLUE;
+      ctx.strokeStyle = WHITE;
+      ctx.fillRect(hydrationLeftX, hydrationFillBarTopY, hydrationWidth, hydrationFillBarHeight);
+      ctx.stroke(hydrationBar);
+    });
+  }
+
   drawLoop(): void {
     const {
       viewportWidth,
@@ -850,11 +898,40 @@ export default class MudworldRenderer {
         mudman.tick();
       });
 
-      // ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+      // day/night
       ctx.fillStyle = BLACK;
       ctx.globalAlpha = 0.35 * (1 - this.world.daylight);
       ctx.fillRect(0, 0, viewportWidth, viewportHeight);
       ctx.globalAlpha = 1;
+
+      // draw HUD (hydration bar)
+      ctx.drawImage(
+        this.hudRenderer.canvas,
+        0, 0,
+        viewportWidth, viewportHeight,
+        0, 0,
+        viewportWidth, viewportHeight,
+      );
+
+      // indicator showing destination
+      const { destination } = this.hero.local;
+      if (destination) {
+        const cyclePercent = (timestamp % 500) / 500;
+        ctx.strokeStyle = DARK_SLATE_GRAY;
+        ctx.globalAlpha = 1 - cyclePercent;
+        ctx.beginPath();
+        ctx.arc(
+          destination.x - viewportOriginX,
+          destination.y - viewportOriginY,
+          Math.floor((0.5 * this.tileSize) * cyclePercent),
+          0,
+          2 * Math.PI,
+        );
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // ctx.fillStyle = TRANSPARENT;
 
       // const { map } = this.world.data;
       // this.eachTileInViewport(viewportOriginX, viewportOriginY, (row, col, worldX, worldY, viewportX, viewportY, tileSize) => {
@@ -893,6 +970,13 @@ export default class MudworldRenderer {
       //   }
       // });
     });
+  }
+
+  start(): void {
+    this.drawWorld();
+    this.drawSpace();
+    this.drawHud();
+    this.drawLoop();
   }
 
   nextHero(): void {

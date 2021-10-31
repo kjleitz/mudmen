@@ -38,6 +38,8 @@ export default class If<L extends Blackboard = Blackboard, W extends Blackboard 
     public elseNode: BaseNode,
   ) {
     super();
+    ifNode.incrementLevel();
+    elseNode.incrementLevel();
   }
 
   reset(): void {
@@ -46,12 +48,17 @@ export default class If<L extends Blackboard = Blackboard, W extends Blackboard 
     this.elseNode.reset();
   }
 
+  incrementLevel(): void {
+    this.ifNode.incrementLevel();
+    this.elseNode.incrementLevel();
+  }
+
   process(local: L, world: W): void {
     if (this.condition(local, world)) {
-      this.ifNode.process(local, world);
+      this.ifNode.run(local, world);
       this.status = this.ifNode.status;
     } else {
-      this.elseNode.process(local, world);
+      this.elseNode.run(local, world);
       this.status = this.elseNode.status;
     }
   }

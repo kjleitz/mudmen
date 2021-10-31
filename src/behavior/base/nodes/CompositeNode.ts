@@ -24,11 +24,18 @@ export default class CompositeNode<
       this.shuffle = args[0].shuffle ?? false;
       this.children = args[1];
     }
+
+    this.children.forEach(child => child.incrementLevel());
   }
 
   reset(): void {
     super.reset();
     this.children.forEach((child) => { child.reset() });
+  }
+
+  incrementLevel(): void {
+    super.incrementLevel();
+    this.children.forEach(child => child.incrementLevel());
   }
 
   shuffleIfNecessary(): void {

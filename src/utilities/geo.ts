@@ -58,3 +58,31 @@ export function insideRect(
     && originY <= y
     && y <= (originY + height);
 }
+
+export function randomPointInCircle(x: number, y: number, radius: number): Coords;
+export function randomPointInCircle(x: number, y: number, minRadius: number, maxRadius: number): Coords;
+export function randomPointInCircle(x: number, y: number, minRadius: number, maxRadius?: number): Coords {
+  if (!maxRadius) {
+    maxRadius = minRadius;
+    minRadius = 0;
+  }
+
+  // Basic "Random point in a circle" adapted from this great SO answer:
+  // https://stackoverflow.com/a/50746409/7469691
+  //
+  // "Random point between two concentric circles" adapted from... my throbbing
+  // head. Holy shit, this took a while to figure out.
+  //
+  const randAngle = Math.random() * (2 * Math.PI);
+  const minRadiusPercent = minRadius / maxRadius;
+  const randRadius = maxRadius * Math.sqrt(randBetween(minRadiusPercent ** 2, 1));
+
+  return coords(
+    Math.floor(x + (randRadius * Math.cos(randAngle))),
+    Math.floor(y + (randRadius * Math.sin(randAngle))),
+  );
+}
+
+function randBetween(min: number, max: number) {
+  return min + (Math.random() * (max - min));
+}

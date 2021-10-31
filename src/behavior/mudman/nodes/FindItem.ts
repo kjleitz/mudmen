@@ -2,7 +2,7 @@ import LeafNode from "@/behavior/base/nodes/LeafNode";
 import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
 import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
 import { ItemType } from "@/models/Item";
-import { coords } from "@/utilities/geo";
+import { coords, randomPointInCircle } from "@/utilities/geo";
 
 export default class FindItem extends LeafNode {
   public itemType: ItemType;
@@ -36,13 +36,8 @@ export default class FindItem extends LeafNode {
       let tries = 0;
       while (!local.hasPath && tries < 25) {
         tries += 1;
-        // "random point in a circle" from this great SO answer:
-        // https://stackoverflow.com/a/50746409/7469691
-        const randAngle = Math.random() * (2 * Math.PI);
-        const randRadius = eyesight * Math.sqrt(Math.random());
-        const randX = Math.floor(local.x + (randRadius * Math.cos(randAngle)));
-        const randY = Math.floor(local.y + (randRadius * Math.sin(randAngle)));
-        world.data.map.populatePath(path, local.x, local.y, randX, randY, eyesight);
+        const point = randomPointInCircle(local.x, local.y, eyesight);
+        world.data.map.populatePath(path, local.x, local.y, point[0], point[1], eyesight);
       }
 
       if (local.hasPath) {

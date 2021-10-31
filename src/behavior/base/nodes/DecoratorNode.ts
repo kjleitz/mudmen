@@ -7,6 +7,7 @@ export default class DecoratorNode<ChildNode extends BaseNode = BaseNode> extend
   constructor(child: ChildNode) {
     super();
     this.child = child;
+    this.child.incrementLevel();
   }
 
   reset(): void {
@@ -14,8 +15,13 @@ export default class DecoratorNode<ChildNode extends BaseNode = BaseNode> extend
     this.child.reset();
   }
 
+  incrementLevel(): void {
+    super.incrementLevel();
+    this.child.incrementLevel();
+  }
+
   process(local: Blackboard, world: Blackboard): void {
-    this.child.process(local, world);
+    this.child.run(local, world);
     this.status = this.child.status;
   }
 }

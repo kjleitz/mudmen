@@ -56,8 +56,18 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     return destination ? this.isNear(destination.x, destination.y) : true;
   }
 
+  get nearbyThreshold(): number {
+    return 5 * this.data.moveSpeed;
+  }
+
+  get percentHydrated(): number {
+    return this.data.hydration / 100;
+  }
+
   clearPath(): void {
     this.data.path.length = 0;
+    // TODO: is this a good spot to clear the unreachables?
+    this.data.unreachable.length = 0;
   }
 
   setCurrentPosition(x: number, y: number): void {
@@ -74,6 +84,10 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     }
 
     if (oldY !== y) this.data.yDirection = oldY < y ? 1 : -1;
+
+    if (oldX !== x || oldY !== y) {
+      this.data.sitting = false;
+    }
 
     this.data.currentX = x;
     this.data.currentY = y;
@@ -98,7 +112,11 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     const { path } = this.data;
     const moveSpeed = speedLimit ?? this.data.moveSpeed;
     const nextPathNode = path[path.length - 1];
-    if (!nextPathNode) return;
+    if (!nextPathNode) {
+      // TODO: is this a good spot to clear the unreachables?
+      this.data.unreachable.length = 0;
+      return;
+    }
 
     if (nextPathNode.x === this.x && nextPathNode.y === this.y) {
       path.pop();
@@ -161,7 +179,18 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   }
 
   isNear(x: number, y: number): boolean {
-    // const distance = distanceBetween(this.x, this.y, x, y);
-    return distanceBetween(this.x, this.y, x, y) <= (5 * this.data.moveSpeed);
+    return distanceBetween(this.x, this.y, x, y) <= this.nearbyThreshold;
+  }
+
+  isAt(x: number, y: number): boolean {
+    return this.x === x && this.y === y;
+  }
+
+  isOneStepAwayFrom(x: number, y: number): boolean {
+    return distanceBetween(this.x, this.y, x, y) <= this.data.moveSpeed;
+  }
+
+  distanceTo(x: number, y: number): number {
+    return distanceBetween(this.x, this.y, x, y);
   }
 }

@@ -9,7 +9,7 @@ export default class Fail<T extends BaseNode = BaseNode> extends DecoratorNode {
   }
 
   process(local: Blackboard, world: Blackboard): void {
-    this.child.process(local, world);
+    this.child.run(local, world);
     this.fail();
   }
 }
