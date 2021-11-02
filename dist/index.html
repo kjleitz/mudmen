@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Document</title><style>/* This is not meant to be permanent; just for testing noise generators. */
+    canvas {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      /* width: 100%;
+      height: 100%; */
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      z-index: 10;
+      opacity: 0.5;
+    }
+
+    .continents-controls {
+      left: 0;
+    }
+
+    .land-controls {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .local-controls {
+      right: 0;
+    }</style><script defer="defer" src="main.js"></script></head><body><canvas id="viewport" width="512" height="512"></canvas></body></html>
