@@ -3,16 +3,52 @@ import snowiness from "@/mapmaking/mudworld/generators/snowiness";
 import { ItemType } from "@/models/Item";
 import Mudman from "@/models/Mudman";
 import Renderer from "@/rendering/base/Renderer";
-import { BLACK, BLUE, DARK_SLATE_GRAY, PALE_VIOLET_RED, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
+import SpriteRenderer from "@/rendering/base/SpriteRenderer";
+import { BLACK, BLUE, DARK_BROWN, DARK_SLATE_GRAY, LIGHT_HALF, LIGHT_QUARTER, LIGHT_THREE_QUARTERS, PALE_VIOLET_RED, RED, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
 import MudmanRenderer from "@/rendering/mudstuff/MudmanRenderer";
 import { Shoreline, shorelineAt, shorelineHasLand } from "@/rendering/mudstuff/Shoreline";
 import { insideRect } from "@/utilities/geo";
+import { weightHigh, weightLow } from "@/utilities/weight";
+
+const enum FlameSprite {
+  FLAME_1,
+  FLAME_2,
+  FLAME_3,
+  FLAME_4,
+  FLAME_5,
+  FLAME_6,
+  FLAME_7,
+  FLAME_8,
+}
+
+const FLAME_SPRITES = [
+  FlameSprite.FLAME_1,
+  FlameSprite.FLAME_2,
+  FlameSprite.FLAME_3,
+  FlameSprite.FLAME_4,
+  FlameSprite.FLAME_5,
+  FlameSprite.FLAME_6,
+  FlameSprite.FLAME_7,
+  FlameSprite.FLAME_8,
+];
+
+const enum BottleSprite {
+  EMPTY,
+  WATER_FULL,
+  WATER_PARTIAL,
+}
+
+const f = (val: number): number => Math.floor(val);
 
 export default class MudworldRenderer {
   public worldRenderer: Renderer;
   public viewportRenderer: Renderer;
   public spaceRenderer: Renderer;
   public hudRenderer: Renderer;
+  public nightRenderer: Renderer;
+  public firelightRenderer: Renderer;
+  public flameRenderer: SpriteRenderer;
+  public bottleRenderer: SpriteRenderer;
   public mudmanRenderer: MudmanRenderer;
   public world: MudworldBlackboard;
   // public hero: Mudman;
@@ -50,6 +86,148 @@ export default class MudworldRenderer {
       6,
     );
 
+    this.nightRenderer = new Renderer(
+      document.createElement("canvas"),
+      viewportCanvas.width,
+      viewportCanvas.height,
+      fps,
+    );
+
+    this.firelightRenderer = new Renderer(
+      document.createElement("canvas"),
+      this.firelightSize,
+      this.firelightSize,
+      12,
+    );
+
+    this.flameRenderer = new SpriteRenderer(
+      this.tileSize,
+      this.tileSize * 2,
+      fps,
+    );
+
+    this.bottleRenderer = new SpriteRenderer(
+      // f(this.tileSize / 2),
+      // f(this.tileSize / 2),
+      f(this.tileSize / 2.5),
+      f(this.tileSize / 2),
+      // f(this.tileSize / 1.5),
+      // this.tileSize,
+      // f(this.tileSize / 3),
+      // f(this.tileSize / 2),
+      // 4 * f(this.tileSize / 3),
+      // 4 * f(this.tileSize / 2),
+      fps,
+    );
+
+    const drawRandomFlameComponent = (ctx: CanvasRenderingContext2D, width: number, centerX: number, centerY: number, color: string): void => {
+      const size = f((0.1 * width) + (0.25 * Math.random() * width));
+      const halfSize = f(size / 2);
+      const xJitter = (Math.random() - 0.5) * size;
+      const yJitter = (weightLow(Math.random()) - 0.5) * size;
+      const angle = Math.random() * (2 * Math.PI);
+      const x = f(centerX - halfSize + xJitter);
+      const y = f(centerY - halfSize + yJitter);
+
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle);
+      ctx.translate(-1 * centerX, -1 * centerY);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.25 + (0.75 * Math.random());
+      ctx.fillRect(x, y, size, size);
+
+      ctx.globalAlpha = 1;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    };
+
+    FLAME_SPRITES.forEach((sprite) => {
+      this.flameRenderer.addSprite(sprite, 0, (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+        drawRandomFlameComponent(ctx, width, centerX, centerY, "red");
+        drawRandomFlameComponent(ctx, width, centerX, centerY, "yellow");
+        drawRandomFlameComponent(ctx, width, centerX, centerY, "orange");
+        drawRandomFlameComponent(ctx, width / 2, centerX, centerY - f(0.25 * Math.random() * height), "red");
+        drawRandomFlameComponent(ctx, width / 2, centerX, centerY - f(0.25 * Math.random() * height), "red");
+      });
+    });
+
+    const createBottlePath = (
+      width: number,
+      height: number,
+      centerX: number,
+      centerY: number,
+      topY: number,
+      rightX: number,
+      bottomY: number,
+      leftX: number,
+    ): Path2D => {
+      const neckWidth = f(width / 2);
+      const neckLeftX = centerX - f(neckWidth / 2);
+      const neckRightX = centerX + f(neckWidth / 2);
+      const bottomRadius = f(width / 4);
+      const lipBottomY = topY + f(height / 8);
+      const shoulderY = topY + f(height / 4);
+      const neckRadius = f((shoulderY - lipBottomY) / 2);
+
+      const bottlePath = new Path2D();
+
+      bottlePath.moveTo(neckLeftX, topY);
+      bottlePath.lineTo(neckRightX, topY);
+      bottlePath.lineTo(neckRightX, lipBottomY);
+      bottlePath.arc(neckRightX, lipBottomY + neckRadius, neckRadius, -0.5 * Math.PI, 0.5 * Math.PI, true);
+      bottlePath.lineTo(rightX, shoulderY);
+      bottlePath.lineTo(rightX, bottomY - bottomRadius);
+      bottlePath.arc(rightX - bottomRadius, bottomY - bottomRadius, bottomRadius, 0, 0.5 * Math.PI);
+      bottlePath.lineTo(leftX + bottomRadius, bottomY);
+      bottlePath.arc(leftX + bottomRadius, bottomY - bottomRadius, bottomRadius, 0.5 * Math.PI, Math.PI);
+      bottlePath.lineTo(leftX, shoulderY);
+      bottlePath.lineTo(leftX + f((width - neckWidth) / 2), shoulderY);
+      bottlePath.arc(neckLeftX, lipBottomY + neckRadius, neckRadius, 0.5 * Math.PI, -0.5 * Math.PI, true);
+      bottlePath.lineTo(neckLeftX, topY);
+      bottlePath.closePath();
+
+      return bottlePath;
+    };
+
+    this.bottleRenderer.addSprite(BottleSprite.EMPTY, 1, (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+      const bottlePath = createBottlePath(width, height, centerX, centerY, topY, rightX, bottomY, leftX);
+
+      ctx.strokeStyle = WHITE;
+      ctx.lineWidth = 1;
+      ctx.stroke(bottlePath);
+    });
+
+    this.bottleRenderer.addSprite(BottleSprite.WATER_FULL, 1, (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+      const bottlePath = createBottlePath(width, height, centerX, centerY, topY, rightX, bottomY, leftX);
+
+      ctx.save();
+
+      ctx.clip(bottlePath);
+      ctx.fillStyle = BLUE;
+      ctx.fillRect(leftX, topY + f(height / 4), width, height);
+
+      ctx.restore();
+
+      ctx.strokeStyle = WHITE;
+      ctx.lineWidth = 1;
+      ctx.stroke(bottlePath);
+    });
+
+    this.bottleRenderer.addSprite(BottleSprite.WATER_PARTIAL, 1, (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+      const bottlePath = createBottlePath(width, height, centerX, centerY, topY, rightX, bottomY, leftX);
+
+      ctx.save();
+
+      ctx.clip(bottlePath);
+      ctx.fillStyle = BLUE;
+      ctx.fillRect(leftX, bottomY - f(height / 4), width, height);
+
+      ctx.restore();
+
+      ctx.strokeStyle = WHITE;
+      ctx.lineWidth = 1;
+      ctx.stroke(bottlePath);
+    });
+
     const mudmanSize = 16;
     this.mudmanRenderer = new MudmanRenderer(mudmanSize, fps);
 
@@ -86,6 +264,13 @@ export default class MudworldRenderer {
   get viewportHeight(): number { return this.viewportRenderer.canvas.height }
 
   get tileSize(): number { return this.world.data.map.tileSize }
+
+  get firelightSize(): number { return 4 * this.tileSize }
+
+  get nightCtx(): CanvasRenderingContext2D { return this.nightRenderer.ctx }
+
+  get viewportOriginX(): number { return this.hero.local.x - f(this.viewportWidth / 2) }
+  get viewportOriginY(): number { return this.hero.local.y - f(this.viewportHeight / 2) }
 
   eachTileInViewport(
     viewportOriginX: number,
@@ -672,9 +857,9 @@ export default class MudworldRenderer {
       // TODO: have a set of pre-defined tile color/illustrations when each
       //       value is within a certain range
       const white = snowiness(elevation);
-      const red = Math.floor(Math.max(white, baseRed));
-      const green = Math.floor(Math.max(white, baseGreen));
-      const blue = Math.floor(Math.max(white, baseBlue));
+      const red = f(Math.max(white, baseRed));
+      const green = f(Math.max(white, baseGreen));
+      const blue = f(Math.max(white, baseBlue));
       ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
       ctx.fillRect(x, y, tileSize, tileSize);
     }
@@ -700,9 +885,9 @@ export default class MudworldRenderer {
       ctx.clearRect(0, 0, spaceWidth, spaceHeight);
       const starCount = 1000;
       for (let n = 0; n < starCount; n++) {
-        const x = Math.floor(Math.random() * spaceWidth);
-        const y = Math.floor(Math.random() * spaceHeight);
-        const size = Math.floor((1 - Math.sqrt(Math.random())) * 4);
+        const x = f(Math.random() * spaceWidth);
+        const y = f(Math.random() * spaceHeight);
+        const size = f((1 - Math.sqrt(Math.random())) * 4);
         const opacity = Math.sqrt(Math.random()).toFixed(2);
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.fillRect(x, y, size, size);
@@ -710,25 +895,33 @@ export default class MudworldRenderer {
     });
   }
 
+  // Careful, this creates a new `Path2D` every time
+  createEmptyFillBar(leftX: number, topY: number, width: number, height: number): Path2D {
+    const bottomY = topY + height;
+    const centerX = leftX + f(width / 2);
+    const rightX = centerX + f(width / 2);
+    const endRadius = f(width / 2);
+    const sidesTopY = topY + endRadius;
+    const sidesBottomY = bottomY - endRadius;
+
+    const fillBar = new Path2D();
+    fillBar.arc(centerX, sidesTopY, endRadius, Math.PI, 0);
+    fillBar.lineTo(rightX, sidesBottomY);
+    fillBar.arc(centerX, sidesBottomY, endRadius, 0, Math.PI);
+    fillBar.lineTo(leftX, sidesTopY);
+
+    return fillBar;
+  }
+
   drawHud(): void {
     const { tileSize, viewportWidth, viewportHeight } = this;
-    const hydrationWidth = Math.floor(tileSize / 4);
-    const hydrationHeight = Math.floor(tileSize * 1.5);
-    const hydrationCenterX = viewportWidth - Math.floor(tileSize / 2);
-    const hydrationRightX = hydrationCenterX + Math.floor(hydrationWidth / 2);
-    const hydrationLeftX = hydrationCenterX - Math.floor(hydrationWidth / 2);
-    const hydrationTopY = Math.floor(tileSize / 2);
-    const hydrationBottomY = hydrationTopY + hydrationHeight;
-    const hydrationRadius = Math.floor(hydrationWidth / 2);
-    const hydrationFillTopY = hydrationTopY - hydrationRadius;
-    const hydrationFillHeight = hydrationHeight + (2 * hydrationRadius);
-    const hydrationFillBottomY = hydrationFillTopY + hydrationFillHeight;
+    const barWidth = f(tileSize / 4);
+    const barHeight = f(1.5 * tileSize);
+    const barTopY = f(tileSize / 2);
+    const barBottomY = barTopY + barHeight;
+    const hydrationLeftX = viewportWidth - f(tileSize / 2) - f(barWidth / 2);
 
-    const hydrationBar = new Path2D();
-    hydrationBar.arc(hydrationCenterX, hydrationTopY, hydrationRadius, Math.PI, 0);
-    hydrationBar.lineTo(hydrationRightX, hydrationBottomY);
-    hydrationBar.arc(hydrationCenterX, hydrationBottomY, hydrationRadius, 0, Math.PI);
-    hydrationBar.lineTo(hydrationLeftX, hydrationTopY);
+    const hydrationBar = this.createEmptyFillBar(hydrationLeftX, barTopY, barWidth, barHeight);
 
     this.hudRenderer.drawOnce((ctx, _timestamp) => {
       ctx.clip(hydrationBar);
@@ -737,17 +930,152 @@ export default class MudworldRenderer {
     this.hudRenderer.drawLoop((ctx, _timestamp) => {
       ctx.clearRect(0, 0, viewportWidth, viewportHeight);
 
-      const hydrationFillBarHeight = Math.floor(this.hero.local.percentHydrated * hydrationFillHeight);
-      const hydrationFillBarTopY = hydrationFillBottomY - hydrationFillBarHeight;
+      const hydrationFillBarHeight = f(this.hero.local.percentHydrated * barHeight);
+      const hydrationFillBarTopY = barBottomY - hydrationFillBarHeight;
 
       ctx.fillStyle = SHADOW_QUARTER;
       ctx.fill(hydrationBar);
 
       ctx.fillStyle = BLUE;
+      ctx.fillRect(hydrationLeftX, hydrationFillBarTopY, barWidth, hydrationFillBarHeight);
       ctx.strokeStyle = WHITE;
-      ctx.fillRect(hydrationLeftX, hydrationFillBarTopY, hydrationWidth, hydrationFillBarHeight);
+      ctx.lineWidth = 2;
       ctx.stroke(hydrationBar);
     });
+  }
+
+  // drawFirelight(): void {
+  //   const { firelightSize } = this;
+  //   const radius = f(firelightSize / 2);
+  //   const centerX = radius;
+  //   const centerY = radius;
+
+  //   this.firelightRenderer.drawOnce((ctx) => {
+  //     const firelight = ctx.createRadialGradient(
+  //       centerX,
+  //       centerY,
+  //       f(radius / 5),
+  //       centerX,
+  //       centerY,
+  //       radius,
+  //     );
+
+  //     firelight.addColorStop(0, WHITE);
+  //     firelight.addColorStop(0.2, WHITE);
+  //     firelight.addColorStop(0.5, LIGHT_THREE_QUARTERS);
+  //     firelight.addColorStop(1, TRANSPARENT);
+
+  //     ctx.fillStyle = firelight;
+  //     ctx.fillRect(0, 0, firelightSize, firelightSize);
+  //   });
+  // }
+
+  drawFirelight(): void {
+    const { firelightSize } = this;
+    const radius = f(firelightSize / 2);
+    const centerX = radius;
+    const centerY = radius;
+
+    this.firelightRenderer.drawLoop((ctx, timestamp) => {
+      const { daylight } = this.world;
+      if (daylight === 1) return;
+
+      ctx.clearRect(0, 0, firelightSize, firelightSize);
+
+      const flickerRadius = (1 - daylight) * (radius * (0.9 + (0.1 * Math.random())));
+
+      const firelight = ctx.createRadialGradient(
+        centerX,
+        centerY,
+        f(flickerRadius / 5),
+        // 0,
+        centerX,
+        centerY,
+        flickerRadius,
+      );
+
+      firelight.addColorStop(0, WHITE);
+      // firelight.addColorStop(0.2, WHITE);
+      firelight.addColorStop(0.2, WHITE);
+      firelight.addColorStop(0.4, LIGHT_HALF);
+      // firelight.addColorStop(0.4, LIGHT_THREE_QUARTERS);
+      // firelight.addColorStop(0.5, LIGHT_THREE_QUARTERS);
+      // firelight.addColorStop(0.5, LIGHT_THREE_QUARTERS);
+      firelight.addColorStop(0.6, LIGHT_HALF);
+      // firelight.addColorStop(0.6, LIGHT_QUARTER);
+      firelight.addColorStop(0.75, LIGHT_QUARTER);
+      firelight.addColorStop(1, TRANSPARENT);
+
+      ctx.fillStyle = firelight;
+      ctx.fillRect(0, 0, firelightSize, firelightSize);
+    });
+  }
+
+  drawNightInto(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    const { daylight } = this.world;
+    if (daylight === 1) return;
+
+    const {
+      nightCtx,
+      viewportWidth,
+      viewportHeight,
+      viewportOriginX,
+      viewportOriginY,
+      firelightSize,
+    } = this;
+
+    // clear current night
+    nightCtx.clearRect(0, 0, viewportWidth, viewportHeight);
+
+    // render darkness
+    nightCtx.fillStyle = BLACK;
+    nightCtx.fillRect(0, 0, viewportWidth, viewportHeight);
+
+    // we're gonna carve out firelight spots
+    const oldGcOp = nightCtx.globalCompositeOperation;
+    nightCtx.globalCompositeOperation = "destination-out";
+
+    const firelightCanvas = this.firelightRenderer.canvas;
+    const firelightRadius = f(firelightSize / 2);
+
+    this.world.data.items.forEachOfType(ItemType.FIRE, (item) => {
+      const inView = insideRect(
+        item.x,
+        item.y,
+        viewportOriginX,
+        viewportOriginY,
+        viewportWidth,
+        viewportHeight,
+      );
+
+      if (!inView) return;
+
+      const x = item.x - viewportOriginX;
+      const y = item.y - viewportOriginY;
+
+      nightCtx.drawImage(
+        firelightCanvas,
+        0, 0,
+        firelightSize, firelightSize,
+        x - firelightRadius, y - firelightRadius,
+        firelightSize, firelightSize,
+      );
+
+      const flameSprite = FLAME_SPRITES[f(FLAME_SPRITES.length * ((timestamp % 2000) / 2000))];
+      this.flameRenderer.drawSprite(flameSprite, ctx, x, y - 2);
+    });
+
+    nightCtx.globalCompositeOperation = oldGcOp;
+
+    ctx.globalAlpha = 0.35 * (1 - daylight);
+    ctx.drawImage(
+      this.nightRenderer.canvas,
+      0, 0,
+      viewportWidth, viewportHeight,
+      0, 0,
+      viewportWidth, viewportHeight,
+    );
+    ctx.globalAlpha = 1;
   }
 
   drawLoop(): void {
@@ -767,8 +1095,9 @@ export default class MudworldRenderer {
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, viewportWidth, viewportHeight);
 
-      const viewportOriginX = this.hero.local.x - (viewportWidth / 2);
-      const viewportOriginY = this.hero.local.y - (viewportHeight / 2);
+      const { viewportOriginX, viewportOriginY } = this;
+      // const viewportOriginX = this.hero.local.x - (viewportWidth / 2);
+      // const viewportOriginY = this.hero.local.y - (viewportHeight / 2);
 
       if (
         viewportOriginX < 0
@@ -790,7 +1119,7 @@ export default class MudworldRenderer {
         const shadowY = viewportOriginY < 0 ? Math.abs(viewportOriginY) : 0;
         const shadowWidth = viewportOriginX + viewportWidth > worldWidth ? (worldWidth - viewportOriginX) : viewportWidth;
         const shadowHeight = viewportOriginY + viewportHeight > worldHeight ? (worldHeight - viewportOriginY) : viewportHeight;
-        const shadowGirth = Math.floor(viewportWidth / 40);
+        const shadowGirth = f(viewportWidth / 40);
 
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
 
@@ -850,8 +1179,11 @@ export default class MudworldRenderer {
         const x = item.x - viewportOriginX;
         const y = item.y - viewportOriginY;
 
-        ctx.fillStyle = "blueviolet";
-        ctx.fillRect(x - 4, y - 4, 8, 8);
+        // ctx.fillStyle = "blueviolet";
+        // ctx.fillRect(x - 4, y - 4, 8, 8);
+        // this.bottleRenderer.drawSprite(BottleSprite.EMPTY, ctx, x, y);
+        this.bottleRenderer.drawSprite(BottleSprite.WATER_FULL, ctx, x, y);
+        // this.bottleRenderer.drawSprite(BottleSprite.WATER_PARTIAL, ctx, x, y);
       });
 
       // items (fire)
@@ -870,8 +1202,10 @@ export default class MudworldRenderer {
         const x = item.x - viewportOriginX;
         const y = item.y - viewportOriginY;
 
-        ctx.fillStyle = "red";
-        ctx.fillRect(x - 4, y - 4, 8, 8);
+        ctx.fillStyle = DARK_BROWN;
+        ctx.fillRect(x - 5, y - 5, 10, 10);
+        ctx.fillStyle = "orangered";
+        ctx.fillRect(x - 4, y - 5, 8, 6);
       });
 
       // population
@@ -898,11 +1232,9 @@ export default class MudworldRenderer {
         mudman.tick();
       });
 
-      // day/night
-      ctx.fillStyle = BLACK;
-      ctx.globalAlpha = 0.35 * (1 - this.world.daylight);
-      ctx.fillRect(0, 0, viewportWidth, viewportHeight);
-      ctx.globalAlpha = 1;
+      // day/night; at night, darkness falls, firelight cuts through the
+      // darkness, and flames appear above fires
+      this.drawNightInto(ctx, timestamp);
 
       // draw HUD (hydration bar)
       ctx.drawImage(
@@ -923,7 +1255,7 @@ export default class MudworldRenderer {
         ctx.arc(
           destination.x - viewportOriginX,
           destination.y - viewportOriginY,
-          Math.floor((0.5 * this.tileSize) * cyclePercent),
+          f((0.5 * this.tileSize) * cyclePercent),
           0,
           2 * Math.PI,
         );
@@ -947,7 +1279,7 @@ export default class MudworldRenderer {
       //   const hasGrass = !underwater && elevation < SNOW_LINE && moisture > 170;
       //   if (hasGrass) {
       //     const grassCoverage = weightLow(moistureNoise(worldX / worldWidth, worldY / worldHeight));
-      //     const grassBladeCount = (3 * Math.floor(grassCoverage * tileSize));
+      //     const grassBladeCount = (3 * f(grassCoverage * tileSize));
       //     const timeFraction = (timestamp % 2000) / 2000;
       //     const windSpeed = (1 + Math.sin(timeFraction * (2 * Math.PI))) / 2;
       //     // const grassLean = moistureNoise((worldX / worldWidth) * windSpeed, (worldY / worldHeight) * windSpeed)
@@ -960,9 +1292,9 @@ export default class MudworldRenderer {
 
       //       ctx.beginPath();
       //       ctx.moveTo(bladeX, bladeY);
-      //       // ctx.lineTo(bladeX + Math.floor(Math.random() * 5), bladeY - 3);
-      //       // ctx.lineTo(bladeX + Math.floor(windSpeed * 5), bladeY - 3);
-      //       ctx.lineTo(bladeX + Math.floor(grassLean * 5), bladeY - 3);
+      //       // ctx.lineTo(bladeX + f(Math.random() * 5), bladeY - 3);
+      //       // ctx.lineTo(bladeX + f(windSpeed * 5), bladeY - 3);
+      //       ctx.lineTo(bladeX + f(grassLean * 5), bladeY - 3);
       //       ctx.strokeStyle = "rgba(0, 255, 0, 0.25)";
       //       // ctx.strokeStyle = "rgba(0, 255, 0, 1)";
       //       ctx.stroke();
@@ -976,6 +1308,7 @@ export default class MudworldRenderer {
     this.drawWorld();
     this.drawSpace();
     this.drawHud();
+    this.drawFirelight();
     this.drawLoop();
   }
 

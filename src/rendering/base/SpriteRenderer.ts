@@ -22,10 +22,10 @@ export default class SpriteRenderer {
     this.defaultSpriteHeight = Math.floor(defaultSpriteHeight);
   }
 
-  addSprite(id: number, draw: DrawSprite, ...rest: never): void;
-  addSprite(id: number, size: number, draw: DrawSprite, ...rest: never): void;
-  addSprite(id: number, width: number, height: number, draw: DrawSprite): void;
-  addSprite(id: number, ...[drawOrWidth, drawOrHeight, drawSprite]: [DrawSprite, never, never] | [number, DrawSprite, never] | [number, number, DrawSprite]): void {
+  addSprite(id: number, padding: number, draw: DrawSprite, ...rest: never): void;
+  addSprite(id: number, padding: number, size: number, draw: DrawSprite, ...rest: never): void;
+  addSprite(id: number, padding: number, width: number, height: number, draw: DrawSprite): void;
+  addSprite(id: number, padding: number, ...[drawOrWidth, drawOrHeight, drawSprite]: [DrawSprite, never, never] | [number, DrawSprite, never] | [number, number, DrawSprite]): void {
     let width: number;
     let height: number;
     let draw: DrawSprite;
@@ -46,8 +46,8 @@ export default class SpriteRenderer {
 
     const renderer = new Renderer(
       document.createElement("canvas"),
-      width,
-      height,
+      width + (padding * 2),
+      height + (padding * 2),
       this.fps,
     );
 
@@ -60,10 +60,10 @@ export default class SpriteRenderer {
         height,
         Math.floor(width / 2),
         Math.floor(height / 2),
-        0,
-        width,
-        height,
-        0,
+        0 + padding,
+        width - padding,
+        height - padding,
+        0 + padding,
       );
     });
   }

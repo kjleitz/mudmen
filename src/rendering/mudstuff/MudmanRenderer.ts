@@ -371,10 +371,11 @@ export default class MudmanRenderer {
     ctx.fill();
 
     // left foot top
-    ctx.strokeStyle = DARK_SLATE_GRAY;
+    ctx.fillStyle = DARK_BROWN;
     ctx.beginPath();
-    ctx.arc(leftLegCenterX, legsBottomY, footRadius, -0.25 * Math.PI, -0.75 * Math.PI, true);
-    ctx.stroke();
+    ctx.arc(leftLegCenterX, legsBottomY, footRadius, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillStyle = BROWN;
 
     // right leg
     ctx.fillRect(rightLegLeftX, legsTopY, legWidth, legHeight);
@@ -385,10 +386,10 @@ export default class MudmanRenderer {
     ctx.fill();
 
     // right foot top
-    ctx.strokeStyle = DARK_SLATE_GRAY;
+    ctx.fillStyle = DARK_BROWN;
     ctx.beginPath();
-    ctx.arc(rightLegCenterX, legsBottomY, footRadius, -0.25 * Math.PI, -0.75 * Math.PI, true);
-    ctx.stroke();
+    ctx.arc(rightLegCenterX, legsBottomY, footRadius, 0, 2 * Math.PI);
+    ctx.fill();
 
     ctx.restore();
   }
@@ -616,19 +617,19 @@ export default class MudmanRenderer {
   }
 
   addStandingSprites(): void {
-    this.spriteRenderer.addSprite(MudmanSprite.STANDING_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.STANDING_BACK, 0, (ctx) => {
       this.drawStanding(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.STANDING_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.STANDING_FRONT, 0, (ctx) => {
       this.drawStanding(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.STANDING_RIGHT_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.STANDING_RIGHT_BACK, 0, (ctx) => {
       this.drawStandingRight(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.STANDING_RIGHT_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.STANDING_RIGHT_FRONT, 0, (ctx) => {
       this.drawStandingRight(ctx, true);
     });
 
@@ -644,19 +645,19 @@ export default class MudmanRenderer {
   }
 
   addSittingSprites(): void {
-    this.spriteRenderer.addSprite(MudmanSprite.SITTING_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.SITTING_BACK, 0, (ctx) => {
       this.drawSitting(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.SITTING_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.SITTING_FRONT, 0, (ctx) => {
       this.drawSitting(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.SITTING_RIGHT_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.SITTING_RIGHT_BACK, 0, (ctx) => {
       this.drawSittingRight(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.SITTING_RIGHT_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.SITTING_RIGHT_FRONT, 0, (ctx) => {
       this.drawSittingRight(ctx, true);
     });
 
@@ -672,67 +673,67 @@ export default class MudmanRenderer {
   }
 
   addWalkingSprites(): void {
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_1_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_1_BACK, 0, (ctx) => {
       this.drawWalking1(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_2_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_2_BACK, 0, (ctx) => {
       this.drawWalking2(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_3_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_3_BACK, 0, (ctx) => {
       this.drawWalking3(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_4_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_4_BACK, 0, (ctx) => {
       this.drawWalking4(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_1_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_1_FRONT, 0, (ctx) => {
       this.drawWalking1(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_2_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_2_FRONT, 0, (ctx) => {
       this.drawWalking2(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_3_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_3_FRONT, 0, (ctx) => {
       this.drawWalking3(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_4_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_4_FRONT, 0, (ctx) => {
       this.drawWalking4(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_1_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_1_BACK, 0, (ctx) => {
       this.drawWalkingRight1(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_2_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_2_BACK, 0, (ctx) => {
       this.drawWalkingRight2(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_3_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_3_BACK, 0, (ctx) => {
       this.drawWalkingRight3(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_4_BACK, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_4_BACK, 0, (ctx) => {
       this.drawWalkingRight4(ctx, false);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_1_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_1_FRONT, 0, (ctx) => {
       this.drawWalkingRight1(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_2_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_2_FRONT, 0, (ctx) => {
       this.drawWalkingRight2(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_3_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_3_FRONT, 0, (ctx) => {
       this.drawWalkingRight3(ctx, true);
     });
 
-    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_4_FRONT, (ctx) => {
+    this.spriteRenderer.addSprite(MudmanSprite.WALKING_RIGHT_4_FRONT, 0, (ctx) => {
       this.drawWalkingRight4(ctx, true);
     });
 

@@ -4,11 +4,8 @@ import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
 import { ItemType } from "@/models/Item";
 
 export default class UseItem extends BaseNode {
-  public itemType: ItemType;
-
-  constructor(itemType: ItemType) {
+  constructor(public itemType: ItemType) {
     super();
-    this.itemType = itemType;
   }
 
   process(local: MudmanBlackboard, _world: MudworldBlackboard): void {

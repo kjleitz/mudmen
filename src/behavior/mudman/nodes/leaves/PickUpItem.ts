@@ -4,11 +4,8 @@ import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
 import { ItemType } from "@/models/Item";
 
 export default class PickUpItem extends LeafNode {
-  public itemType: ItemType;
-
-  constructor(itemType: ItemType) {
+  constructor(public itemType: ItemType) {
     super();
-    this.itemType = itemType;
   }
 
   process(local: MudmanBlackboard, world: MudworldBlackboard): void {

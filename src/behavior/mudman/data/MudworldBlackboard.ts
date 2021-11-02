@@ -74,6 +74,7 @@ for (let i = 0; i < FIRES; i++) {
   const coords = mudworldMap.randomCoordsOnLand();
   mudworldItems.add(new Fire(coords[0], coords[1]));
 }
+mudworldItems.add(new Fire(300, 210));
 
 // mudworldItems.add(new Water(100, 325, 300));
 // mudworldItems.add(new Water(100, 535, 300));

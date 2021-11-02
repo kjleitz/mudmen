@@ -17,3 +17,7 @@ export const SHADOW_EIGHTH = "rgba(0, 0, 0, 0.125)";
 export const SHADOW_QUARTER = "rgba(0, 0, 0, 0.25)";
 export const SHADOW_HALF = "rgba(0, 0, 0, 0.5)";
 export const SHADOW_THREE_QUARTERS = "rgba(0, 0, 0, 0.75)";
+export const LIGHT_EIGHTH = "rgba(255, 255, 255, 0.125)";
+export const LIGHT_QUARTER = "rgba(255, 255, 255, 0.25)";
+export const LIGHT_HALF = "rgba(255, 255, 255, 0.5)";
+export const LIGHT_THREE_QUARTERS = "rgba(255, 255, 255, 0.75)";
