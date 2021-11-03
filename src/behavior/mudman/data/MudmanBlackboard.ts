@@ -71,26 +71,29 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   }
 
   setCurrentPosition(x: number, y: number): void {
-    const oldX = this.data.currentX;
-    const oldY = this.data.currentY;
-
     x = Math.floor(x);
     y = Math.floor(y);
 
-    if (oldX === x) {
-      if (oldY !== y) this.data.xDirection = 0;
-    } else {
-      this.data.xDirection = oldX < x ? 1 : -1;
-    }
+    this.face(x, y);
 
-    if (oldY !== y) this.data.yDirection = oldY < y ? 1 : -1;
-
-    if (oldX !== x || oldY !== y) {
+    if (this.data.currentX !== x || this.data.currentY !== y) {
       this.data.sitting = false;
     }
 
     this.data.currentX = x;
     this.data.currentY = y;
+  }
+
+  face(x: number, y: number): void {
+    const { currentX, currentY } = this.data;
+
+    if (currentX === x) {
+      if (currentY !== y) this.data.xDirection = 0;
+    } else {
+      this.data.xDirection = currentX < x ? 1 : -1;
+    }
+
+    if (currentY !== y) this.data.yDirection = currentY < y ? 1 : -1;
   }
 
   moveToward(x: number, y: number, speed?: number): void {

@@ -1,7 +1,7 @@
 import BehaviorStatus from "@/behavior/base/BehaviorStatus";
 import Blackboard from "@/behavior/base/data/Blackboard";
 
-class BaseNode {
+export default class BaseNode {
   public static debug = false;
   // public static debug = true;
 
@@ -60,5 +60,3 @@ class BaseNode {
     this.status = BehaviorStatus.RUNNING;
   }
 }
-
-export default BaseNode;

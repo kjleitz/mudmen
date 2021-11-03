@@ -1,9 +1,12 @@
 import All from "@/behavior/base/nodes/composites/All";
 import Any from "@/behavior/base/nodes/composites/Any";
 import DecoratorNode from "@/behavior/base/nodes/DecoratorNode";
+import FaceFire from "@/behavior/mudman/nodes/leaves/FaceFire";
+import FaceItem from "@/behavior/mudman/nodes/leaves/FaceItem";
 import IsDay from "@/behavior/mudman/nodes/leaves/IsDay";
 import IsNearFire from "@/behavior/mudman/nodes/leaves/IsNearFire";
 import Sit from "@/behavior/mudman/nodes/leaves/Sit";
+import { ItemType } from "@/models/Item";
 
 // Succeeds if:
 //
@@ -12,7 +15,7 @@ import Sit from "@/behavior/mudman/nodes/leaves/Sit";
 //
 // Otherwise, it fails.
 //
-export default class StayHydrated extends DecoratorNode {
+export default class StayWarm extends DecoratorNode {
   constructor() {
     super(new Any([
       // it's daytime
@@ -20,6 +23,7 @@ export default class StayHydrated extends DecoratorNode {
       // sitting near fire
       new All([
         new IsNearFire(),
+        new FaceFire(),
         new Sit(),
       ]),
     ]));

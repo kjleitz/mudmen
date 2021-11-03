@@ -57,6 +57,8 @@ export default class MudworldBlackboard extends Blackboard<MudworldBlackboardDat
 
 export const mudworldItems = new ItemDatabase();
 export const mudworldMap = new MudworldMap(512, 512, 32);
+// export const mudworldMap = new MudworldMap(512, 512, 2);
+// export const mudworldMap = new MudworldMap(512, 512, 1);
 
 mudworldMap.fillWithTerrain();
 
@@ -64,14 +66,14 @@ mudworldMap.fillWithTerrain();
 const WATERS = 1000;
 
 for (let i = 0; i < WATERS; i++) {
-  const coords = mudworldMap.randomCoordsOnLand();
+  const coords = mudworldMap.randomWalkableCoords();
   mudworldItems.add(new Water(100, coords[0], coords[1]));
 }
 
 const FIRES = 1000;
 
 for (let i = 0; i < FIRES; i++) {
-  const coords = mudworldMap.randomCoordsOnLand();
+  const coords = mudworldMap.randomWalkableCoords();
   mudworldItems.add(new Fire(coords[0], coords[1]));
 }
 mudworldItems.add(new Fire(300, 210));

@@ -1,10 +1,17 @@
 import Grid from "@/mapmaking/base/Grid";
 import elevationNoise from "@/mapmaking/mudworld/generators/elevationNoise";
+import floraNoise, { TREE_LINE } from "@/mapmaking/mudworld/generators/floraNoise";
 import moistureNoise from "@/mapmaking/mudworld/generators/moistureNoise";
+import { SNOW_LINE } from "@/mapmaking/mudworld/generators/snowiness";
 import PathFinder, { PathNode } from "@/pathfinding/base/PathFinder";
 import { coords, Coords } from "@/utilities/geo";
 
 // const TILE_WIDTH = 16;
+
+export const enum Structure {
+  NONE,
+  TREE,
+}
 
 export function to32Bits(value: number, place: number, bits: number) {
   return value << (31 - bits - place);
@@ -56,8 +63,11 @@ export default class MudworldMap {
 
       const moisture = Math.max(wetness, this.noiseToByte(moistureNoise(x, y)) - dryness);
 
-      // TODO: Structures will come later
-      const structure = 0;
+      const florality = floraNoise(x, y); // florality could be anywhere from -1 to 1
+      const distanceToSeaLevel = elevation - 128;
+      const structure = florality > 0.25 && elevation < TREE_LINE && distanceToSeaLevel > 2
+        ? Structure.TREE
+        : Structure.NONE;
 
       return this.tileValue(
         elevation,
@@ -179,7 +189,7 @@ export default class MudworldMap {
     return from32Bits(tileValue, 8, 8);
   }
 
-  static structureFromTileValue(tileValue: number): number {
+  static structureFromTileValue(tileValue: number): Structure {
     return from32Bits(tileValue, 16, 8);
   }
 
@@ -221,6 +231,7 @@ export default class MudworldMap {
     MudworldMap.eachNeighboringTile(this.grid, row, col, mapper);
   }
 
+  // NOTE: not guaranteed to be walkable
   randomCoordsOnLand(): Coords {
     const { width, height } = this;
     let x = 0;
@@ -236,9 +247,24 @@ export default class MudworldMap {
     return coords(x, y);
   }
 
+  randomWalkableCoords(): Coords {
+    const { width, height } = this;
+    let x = 0;
+    let y = 0;
+    let walkable = false;
+
+    while (!walkable) {
+      x = Math.floor(Math.random() * width);
+      y = Math.floor(Math.random() * height);
+      walkable = MudworldMap.walkableFromTileValue(this.valueAt(x, y));
+    }
+
+    return coords(x, y);
+  }
+
   // NOTE: This returns TILE coords, not world coords.
-  randomTileCoordsOnLand(): Coords {
-    const worldCoords = this.randomCoordsOnLand();
+  randomWalkableTileCoords(): Coords {
+    const worldCoords = this.randomWalkableCoords();
     worldCoords[0] = Math.floor(worldCoords[0] / this.tileSize);
     worldCoords[1] = Math.floor(worldCoords[1] / this.tileSize);
     return worldCoords;
@@ -251,6 +277,10 @@ export default class MudworldMap {
 
   valueAt(x: number, y: number): number {
     return this.grid.valueAt(this.yToRow(y), this.xToCol(x));
+  }
+
+  valueAtTile(row: number, col: number): number {
+    return this.grid.valueAt(row, col);
   }
 
   inBounds(x: number, y: number): boolean {

@@ -1,10 +1,11 @@
 import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
 import snowiness from "@/mapmaking/mudworld/generators/snowiness";
-import { ItemType } from "@/models/Item";
+import MudworldMap, { Structure } from "@/mapmaking/mudworld/MudworldMap";
+import Item, { ItemType } from "@/models/Item";
 import Mudman from "@/models/Mudman";
 import Renderer from "@/rendering/base/Renderer";
 import SpriteRenderer from "@/rendering/base/SpriteRenderer";
-import { BLACK, BLUE, DARK_BROWN, DARK_SLATE_GRAY, LIGHT_HALF, LIGHT_QUARTER, LIGHT_THREE_QUARTERS, PALE_VIOLET_RED, RED, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
+import { BLACK, BLUE, DARK_BROWN, DARK_GREEN, DARK_SLATE_GRAY, FOREST_GREEN, LIGHT_HALF, LIGHT_QUARTER, LIGHT_THREE_QUARTERS, PALE_VIOLET_RED, PERU_BROWN, RED, SADDLE_BROWN, SANDY_BROWN, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
 import MudmanRenderer from "@/rendering/mudstuff/MudmanRenderer";
 import { Shoreline, shorelineAt, shorelineHasLand } from "@/rendering/mudstuff/Shoreline";
 import { insideRect } from "@/utilities/geo";
@@ -38,6 +39,21 @@ const enum BottleSprite {
   WATER_PARTIAL,
 }
 
+const enum TreeSprite {
+  STUMP,
+  BOUGHS_1,
+  BOUGHS_2,
+  BOUGHS_3,
+  BOUGHS_4,
+}
+
+const BOUGH_SPRITES = [
+  TreeSprite.BOUGHS_1,
+  TreeSprite.BOUGHS_2,
+  TreeSprite.BOUGHS_3,
+  TreeSprite.BOUGHS_4,
+];
+
 const f = (val: number): number => Math.floor(val);
 
 export default class MudworldRenderer {
@@ -49,8 +65,10 @@ export default class MudworldRenderer {
   public firelightRenderer: Renderer;
   public flameRenderer: SpriteRenderer;
   public bottleRenderer: SpriteRenderer;
+  public treeRenderer: SpriteRenderer;
   public mudmanRenderer: MudmanRenderer;
   public world: MudworldBlackboard;
+  public overlayFullMap = false;
   // public hero: Mudman;
 
   private heroIndex = 0;
@@ -107,16 +125,14 @@ export default class MudworldRenderer {
     );
 
     this.bottleRenderer = new SpriteRenderer(
-      // f(this.tileSize / 2),
-      // f(this.tileSize / 2),
       f(this.tileSize / 2.5),
       f(this.tileSize / 2),
-      // f(this.tileSize / 1.5),
-      // this.tileSize,
-      // f(this.tileSize / 3),
-      // f(this.tileSize / 2),
-      // 4 * f(this.tileSize / 3),
-      // 4 * f(this.tileSize / 2),
+      fps,
+    );
+
+    this.treeRenderer = new SpriteRenderer(
+      this.tileSize * 4,
+      this.tileSize * 4,
       fps,
     );
 
@@ -228,12 +244,84 @@ export default class MudworldRenderer {
       ctx.stroke(bottlePath);
     });
 
+    this.treeRenderer.addSprite(
+      TreeSprite.STUMP, 1,
+      this.tileSize,
+      this.tileSize,
+      (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+        const trunkRadius = f(width / 4);
+        const trunkHeight = f(height / 3);
+        const sidesBottomY = bottomY - trunkRadius;
+        const sidesTopY = sidesBottomY - trunkHeight;
+
+        ctx.fillStyle = DARK_BROWN;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = DARK_BROWN;
+        ctx.beginPath();
+        ctx.arc(centerX, sidesBottomY, trunkRadius, 0, Math.PI);
+        ctx.lineTo(centerX - trunkRadius, sidesTopY);
+        ctx.lineTo(centerX + trunkRadius, sidesTopY);
+        ctx.lineTo(centerX + trunkRadius, sidesBottomY);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = SANDY_BROWN;
+        ctx.beginPath();
+        ctx.arc(centerX, sidesTopY, trunkRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = PERU_BROWN;
+        ctx.beginPath();
+        ctx.arc(centerX, sidesTopY, f(trunkRadius / 2), 0, 2 * Math.PI);
+        ctx.fill();
+      },
+    );
+
+    const drawRandomBoughComponent = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, minRadius: number, maxRadius: number, minOpacity: number, maxOpacity: number, color: string, spread: number): void => {
+      const baseRadius = f(minRadius + (Math.random() * (maxRadius - minRadius)));
+      const avgRadius = (maxRadius + minRadius) / 2;
+      const xJitter = f((Math.random() - 0.5) * avgRadius * spread);
+      const yJitter = f((-0.5 * Math.random()) * avgRadius * spread);
+      const opacity = minOpacity + (Math.random() * (maxOpacity - minOpacity));
+
+      ctx.fillStyle = color;
+      ctx.globalAlpha = opacity;
+      ctx.beginPath();
+      ctx.arc(
+        centerX + xJitter,
+        centerY + yJitter,
+        baseRadius,
+        0,
+        2 * Math.PI,
+      );
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    };
+
+    BOUGH_SPRITES.forEach((sprite) => {
+      const { tileSize } = this;
+      this.treeRenderer.addSprite(sprite, 1, (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+        const roughStumpCenterY = centerY - f(tileSize / 8);
+        const roughStumpRadius = f(tileSize / 3);
+        drawRandomBoughComponent(ctx, centerX, roughStumpCenterY, roughStumpRadius, roughStumpRadius, 1, 1, DARK_GREEN, 0);
+
+        for (let i = 0; i < 5; i++) {
+          drawRandomBoughComponent(ctx, centerX, roughStumpCenterY - roughStumpRadius, f(tileSize / 2), f(tileSize / 1.5), 0.5, 1, DARK_GREEN, 1);
+        }
+
+        for (let i = 0; i < 5; i++) {
+          drawRandomBoughComponent(ctx, centerX, roughStumpCenterY - roughStumpRadius, f(tileSize / 16), f(tileSize / 2), 0.1, 0.5, FOREST_GREEN, 3);
+        }
+      });
+    });
+
     const mudmanSize = 16;
     this.mudmanRenderer = new MudmanRenderer(mudmanSize, fps);
 
     const createMudman = (x?: number, y?: number) => {
       if (typeof x !== "number" || typeof y !== "number") {
-        const mudmanCoords = this.world.data.map.randomCoordsOnLand();
+        const mudmanCoords = this.world.data.map.randomWalkableCoords();
         x = mudmanCoords[0];
         y = mudmanCoords[1];
       }
@@ -242,9 +330,9 @@ export default class MudworldRenderer {
       this.world.data.mudmen.push(mudman);
     };
 
-    createMudman(350, 200);
-    // const population = 100;
-    const population = 0;
+    // createMudman(350, 200);
+    // const population = 0;
+    const population = 1000;
     for (let i = 0; i < population; i++) {
       createMudman();
     }
@@ -271,6 +359,57 @@ export default class MudworldRenderer {
 
   get viewportOriginX(): number { return this.hero.local.x - f(this.viewportWidth / 2) }
   get viewportOriginY(): number { return this.hero.local.y - f(this.viewportHeight / 2) }
+
+  eachItemOfTypeInViewport(
+    itemType: ItemType,
+    viewportOriginX: number,
+    viewportOriginY: number,
+    mapper: (item: Item, viewportX: number, viewportY: number) => void,
+  ): void {
+    const {
+      viewportWidth,
+      viewportHeight,
+    } = this;
+
+    // items (water)
+    this.world.data.items.forEachOfType(itemType, (item) => {
+      if (item.used || item.held) return;
+      if (!insideRect(
+        item.x,
+        item.y,
+        viewportOriginX,
+        viewportOriginY,
+        viewportWidth,
+        viewportHeight,
+      )) return;
+
+      mapper(item, item.x - viewportOriginX, item.y - viewportOriginY);
+    });
+  }
+
+  eachMudmanInViewport(
+    viewportOriginX: number,
+    viewportOriginY: number,
+    mapper: (mudman: Mudman, viewportX: number, viewportY: number) => void,
+  ): void {
+    const {
+      viewportWidth,
+      viewportHeight,
+    } = this;
+
+    this.world.data.mudmen.forEach((mudman) => {
+      if (!insideRect(
+        mudman.local.x,
+        mudman.local.y,
+        viewportOriginX,
+        viewportOriginY,
+        viewportWidth,
+        viewportHeight,
+      )) return;
+
+      mapper(mudman, mudman.local.x - viewportOriginX, mudman.local.y - viewportOriginY);
+    });
+  }
 
   eachTileInViewport(
     viewportOriginX: number,
@@ -840,7 +979,7 @@ export default class MudworldRenderer {
     tileSize: number,
     elevation: number,
     moisture: number,
-    structure: number,
+    structure: Structure,
     underwater: boolean,
   ): void {
     const x = col * tileSize;
@@ -862,7 +1001,21 @@ export default class MudworldRenderer {
       const blue = f(Math.max(white, baseBlue));
       ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
       ctx.fillRect(x, y, tileSize, tileSize);
+
+      // switch (structure) {
+      //   case Structure.NONE: break;
+      //   case Structure.TREE: {
+      //     const radius = f(tileSize / 2);
+      //     ctx.fillStyle = "darkgreen";
+      //     ctx.beginPath();
+      //     ctx.arc(x + radius, y + radius, radius, 0, 2 * Math.PI);
+      //     ctx.fill();
+      //     break;
+      //   }
+      //   default: break;
+      // }
     }
+
 
     ctx.strokeStyle = "rgba(0, 0, 0, 0.05)";
     ctx.strokeRect(x, y, tileSize, tileSize);
@@ -1078,229 +1231,261 @@ export default class MudworldRenderer {
     ctx.globalAlpha = 1;
   }
 
+  drawGroundLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    const {
+      viewportWidth,
+      viewportHeight,
+      worldWidth,
+      worldHeight,
+      viewportOriginX,
+      viewportOriginY,
+    } = this;
+
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, viewportWidth, viewportHeight);
+
+    if (
+      viewportOriginX < 0
+      || viewportOriginY < 0
+      || viewportOriginX + viewportWidth > worldWidth
+      || viewportOriginY + viewportHeight > worldHeight
+    ) {
+      const {
+        spaceWidth,
+        spaceHeight,
+      } = this;
+
+      // space & stars
+      ctx.drawImage(
+        this.spaceRenderer.canvas,
+        0, 0,
+        spaceWidth, spaceHeight,
+        0, 0,
+        viewportWidth, viewportHeight,
+      );
+
+      // mudworld's shadow
+      const shadowX = viewportOriginX < 0 ? Math.abs(viewportOriginX) : 0;
+      const shadowY = viewportOriginY < 0 ? Math.abs(viewportOriginY) : 0;
+      const shadowWidth = viewportOriginX + viewportWidth > worldWidth ? (worldWidth - viewportOriginX) : viewportWidth;
+      const shadowHeight = viewportOriginY + viewportHeight > worldHeight ? (worldHeight - viewportOriginY) : viewportHeight;
+      const shadowGirth = f(viewportWidth / 40);
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+
+      // first layer of shadow
+      ctx.fillRect(
+        shadowX - (shadowGirth / 2),
+        shadowY - (shadowGirth / 2),
+        shadowWidth + shadowGirth,
+        shadowHeight + shadowGirth,
+      );
+
+      // second layer of shadow
+      ctx.fillRect(
+        shadowX - shadowGirth,
+        shadowY - shadowGirth,
+        shadowWidth + (shadowGirth * 2),
+        shadowHeight + (shadowGirth * 2),
+      );
+
+      // atmosphere
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowColor = "rgb(0, 0, 255)";
+      ctx.shadowBlur = 50;
+      ctx.fillStyle = "rgb(0, 0, 255)";
+      ctx.fillRect(shadowX - 0.5, shadowY - 0.5, shadowWidth + 1, shadowHeight + 1);
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+    }
+
+    // the planet
+    ctx.drawImage(
+      this.worldRenderer.canvas,
+      viewportOriginX, viewportOriginY,
+      viewportWidth, viewportHeight,
+      0, 0,
+      viewportWidth, viewportHeight,
+    );
+  }
+
+  drawKneeLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    const {
+      viewportWidth,
+      viewportHeight,
+      viewportOriginX,
+      viewportOriginY,
+      tileSize,
+    } = this;
+
+    // items (water)
+    this.eachItemOfTypeInViewport(ItemType.WATER, viewportOriginX, viewportOriginY, (item, x, y) => {
+      this.bottleRenderer.drawSprite(BottleSprite.WATER_FULL, ctx, x, y);
+    });
+
+    // items (fire)
+    this.eachItemOfTypeInViewport(ItemType.FIRE, viewportOriginX, viewportOriginY, (item, x, y) => {
+      // TODO: this needs a sprite
+      ctx.fillStyle = DARK_BROWN;
+      ctx.fillRect(x - 5, y - 5, 10, 10);
+      ctx.fillStyle = "orangered";
+      ctx.fillRect(x - 4, y - 5, 8, 6);
+    });
+
+    // tree trunks
+    const { map } = this.world.data;
+    // const trunkRadius = f(tileSize / 4);
+    // const trunkHeight = f(tileSize / 3);
+    const halfTile = f(tileSize / 2);
+    this.eachTileInViewport(viewportOriginX, viewportOriginY, (row, col, worldX, worldY, viewportX, viewportY) => {
+      // TODO: values for each tile in viewport should be rolled up into a grid
+      //       that updates each frame, because doing this loop multiple times a
+      //       frame is unacceptable.
+      const tileValue = map.valueAtTile(row, col);
+      const structure = MudworldMap.structureFromTileValue(tileValue);
+
+      // TODO: this needs a sprite
+      switch (structure) {
+        case Structure.NONE: break;
+        case Structure.TREE: {
+          this.treeRenderer.drawSprite(TreeSprite.STUMP, ctx, viewportX + halfTile, viewportY + halfTile);
+          break;
+        }
+        default: break;
+      }
+    });
+  }
+
+  drawEyeLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    const {
+      viewportOriginX,
+      viewportOriginY,
+    } = this;
+
+    // population
+    this.eachMudmanInViewport(viewportOriginX, viewportOriginY, (mudman, x, y) => {
+      this.mudmanRenderer.drawMudman(ctx, mudman, x, y, timestamp);
+      // mudman.tick();
+    });
+  }
+
+  drawCanopyLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    const { map } = this.world.data;
+    const {
+      tileSize,
+      viewportOriginX,
+      viewportOriginY,
+    } = this;
+
+    const halfTile = f(tileSize / 2);
+    const boughCount = BOUGH_SPRITES.length;
+    this.eachTileInViewport(viewportOriginX, viewportOriginY, (row, col, worldX, worldY, viewportX, viewportY) => {
+      // TODO: values for each tile in viewport should be rolled up into a grid
+      //       that updates each frame, because doing this loop multiple times a
+      //       frame is unacceptable.
+      const tileValue = map.valueAtTile(row, col);
+      const structure = MudworldMap.structureFromTileValue(tileValue);
+
+      switch (structure) {
+        case Structure.NONE: break;
+        case Structure.TREE: {
+          this.treeRenderer.drawSprite(
+            BOUGH_SPRITES[(row + (3 * col)) % boughCount],
+            ctx,
+            viewportX + halfTile,
+            viewportY + halfTile,
+          );
+          break;
+        }
+        default: break;
+      }
+    });
+  }
+
+  drawBirdLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    // TODO: birds! and other flying/sky objects
+  }
+
+  drawCloudLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    // day/night; at night, darkness falls, firelight cuts through the
+    // darkness, and flames appear above fires
+    this.drawNightInto(ctx, timestamp);
+  }
+
+  drawOrbitLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
+    const {
+      viewportOriginX,
+      viewportOriginY,
+      viewportWidth,
+      viewportHeight,
+    } = this;
+
+    // indicator showing destination
+    const { destination } = this.hero.local;
+    if (destination) {
+      const cyclePercent = (timestamp % 500) / 500;
+      ctx.strokeStyle = DARK_SLATE_GRAY;
+      ctx.globalAlpha = 1 - cyclePercent;
+      ctx.beginPath();
+      ctx.arc(
+        destination.x - viewportOriginX,
+        destination.y - viewportOriginY,
+        f((0.5 * this.tileSize) * cyclePercent),
+        0,
+        2 * Math.PI,
+      );
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // draw HUD (hydration bar)
+    ctx.drawImage(
+      this.hudRenderer.canvas,
+      0, 0,
+      viewportWidth, viewportHeight,
+      0, 0,
+      viewportWidth, viewportHeight,
+    );
+  }
+
   drawLoop(): void {
     const {
       viewportWidth,
       viewportHeight,
       worldWidth,
       worldHeight,
-      spaceWidth,
-      spaceHeight,
     } = this;
 
     this.viewportRenderer.drawLoop((ctx, timestamp) => {
       this.world.data.timestamp = timestamp;
 
-      // ctx.clearRect(0, 0, viewportWidth, viewportHeight);
-      ctx.fillStyle = "black";
-      ctx.fillRect(0, 0, viewportWidth, viewportHeight);
-
-      const { viewportOriginX, viewportOriginY } = this;
-      // const viewportOriginX = this.hero.local.x - (viewportWidth / 2);
-      // const viewportOriginY = this.hero.local.y - (viewportHeight / 2);
-
-      if (
-        viewportOriginX < 0
-        || viewportOriginY < 0
-        || viewportOriginX + viewportWidth > worldWidth
-        || viewportOriginY + viewportHeight > worldHeight
-      ) {
-        // space & stars
+      if (this.overlayFullMap) {
+        ctx.clearRect(0, 0, viewportWidth, viewportHeight);
         ctx.drawImage(
-          this.spaceRenderer.canvas,
+          this.worldRenderer.canvas,
           0, 0,
-          spaceWidth, spaceHeight,
+          worldWidth, worldHeight,
           0, 0,
           viewportWidth, viewportHeight,
         );
 
-        // mudworld's shadow
-        const shadowX = viewportOriginX < 0 ? Math.abs(viewportOriginX) : 0;
-        const shadowY = viewportOriginY < 0 ? Math.abs(viewportOriginY) : 0;
-        const shadowWidth = viewportOriginX + viewportWidth > worldWidth ? (worldWidth - viewportOriginX) : viewportWidth;
-        const shadowHeight = viewportOriginY + viewportHeight > worldHeight ? (worldHeight - viewportOriginY) : viewportHeight;
-        const shadowGirth = f(viewportWidth / 40);
-
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-
-        // first layer of shadow
-        ctx.fillRect(
-          shadowX - (shadowGirth / 2),
-          shadowY - (shadowGirth / 2),
-          shadowWidth + shadowGirth,
-          shadowHeight + shadowGirth,
-        );
-
-        // second layer of shadow
-        ctx.fillRect(
-          shadowX - shadowGirth,
-          shadowY - shadowGirth,
-          shadowWidth + (shadowGirth * 2),
-          shadowHeight + (shadowGirth * 2),
-        );
-
-        // atmosphere
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.shadowColor = "rgb(0, 0, 255)";
-        ctx.shadowBlur = 50;
-        ctx.fillStyle = "rgb(0, 0, 255)";
-        ctx.fillRect(shadowX - 0.5, shadowY - 0.5, shadowWidth + 1, shadowHeight + 1);
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
+        return;
       }
 
-      // the planet
-      ctx.drawImage(
-        this.worldRenderer.canvas,
-        viewportOriginX, viewportOriginY,
-        viewportWidth, viewportHeight,
-        0, 0,
-        viewportWidth, viewportHeight,
-      );
+      this.drawGroundLevel(ctx, timestamp);
+      this.drawKneeLevel(ctx, timestamp);
+      this.drawEyeLevel(ctx, timestamp);
+      this.drawCanopyLevel(ctx, timestamp);
+      this.drawBirdLevel(ctx, timestamp);
+      this.drawCloudLevel(ctx, timestamp);
+      this.drawOrbitLevel(ctx, timestamp);
 
-      // items (water)
-      this.world.data.items.forEachOfType(ItemType.WATER, (item) => {
-        if (item.used || item.held) return;
-
-        const inView = insideRect(
-          item.x,
-          item.y,
-          viewportOriginX,
-          viewportOriginY,
-          viewportWidth,
-          viewportHeight,
-        );
-
-        if (!inView) return;
-
-        const x = item.x - viewportOriginX;
-        const y = item.y - viewportOriginY;
-
-        // ctx.fillStyle = "blueviolet";
-        // ctx.fillRect(x - 4, y - 4, 8, 8);
-        // this.bottleRenderer.drawSprite(BottleSprite.EMPTY, ctx, x, y);
-        this.bottleRenderer.drawSprite(BottleSprite.WATER_FULL, ctx, x, y);
-        // this.bottleRenderer.drawSprite(BottleSprite.WATER_PARTIAL, ctx, x, y);
-      });
-
-      // items (fire)
-      this.world.data.items.forEachOfType(ItemType.FIRE, (item) => {
-        const inView = insideRect(
-          item.x,
-          item.y,
-          viewportOriginX,
-          viewportOriginY,
-          viewportWidth,
-          viewportHeight,
-        );
-
-        if (!inView) return;
-
-        const x = item.x - viewportOriginX;
-        const y = item.y - viewportOriginY;
-
-        ctx.fillStyle = DARK_BROWN;
-        ctx.fillRect(x - 5, y - 5, 10, 10);
-        ctx.fillStyle = "orangered";
-        ctx.fillRect(x - 4, y - 5, 8, 6);
-      });
-
-      // population
-      this.world.data.mudmen.forEach((mudman) => {
-        const inView = insideRect(
-          mudman.local.x,
-          mudman.local.y,
-          viewportOriginX,
-          viewportOriginY,
-          viewportWidth,
-          viewportHeight,
-        );
-
-        if (!inView) return;
-
-        this.mudmanRenderer.drawMudman(
-          ctx,
-          mudman,
-          mudman.local.x - viewportOriginX,
-          mudman.local.y - viewportOriginY,
-          timestamp,
-        );
-
+      this.eachMudmanInViewport(this.viewportOriginX, this.viewportOriginY, (mudman, x, y) => {
         mudman.tick();
       });
-
-      // day/night; at night, darkness falls, firelight cuts through the
-      // darkness, and flames appear above fires
-      this.drawNightInto(ctx, timestamp);
-
-      // draw HUD (hydration bar)
-      ctx.drawImage(
-        this.hudRenderer.canvas,
-        0, 0,
-        viewportWidth, viewportHeight,
-        0, 0,
-        viewportWidth, viewportHeight,
-      );
-
-      // indicator showing destination
-      const { destination } = this.hero.local;
-      if (destination) {
-        const cyclePercent = (timestamp % 500) / 500;
-        ctx.strokeStyle = DARK_SLATE_GRAY;
-        ctx.globalAlpha = 1 - cyclePercent;
-        ctx.beginPath();
-        ctx.arc(
-          destination.x - viewportOriginX,
-          destination.y - viewportOriginY,
-          f((0.5 * this.tileSize) * cyclePercent),
-          0,
-          2 * Math.PI,
-        );
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      }
-
-      // ctx.fillStyle = TRANSPARENT;
-
-      // const { map } = this.world.data;
-      // this.eachTileInViewport(viewportOriginX, viewportOriginY, (row, col, worldX, worldY, viewportX, viewportY, tileSize) => {
-      //   // if (map.underwaterAt(worldX, worldY)) {
-      //   //   this.drawShoreline(ctx, worldX, worldY, viewportX, viewportY, tileSize);
-      //   // }
-      //   const tileCenterX = viewportX + (tileSize / 2);
-      //   const tileCenterY = viewportY + (tileSize / 2);
-      //   const tileValue = map.valueAt(worldX, worldY);
-      //   const underwater = MudworldMap.underwaterFromTileValue(tileValue);
-      //   const elevation = MudworldMap.elevationFromTileValue(tileValue);
-      //   const moisture = MudworldMap.moistureFromTileValue(tileValue);
-      //   const hasGrass = !underwater && elevation < SNOW_LINE && moisture > 170;
-      //   if (hasGrass) {
-      //     const grassCoverage = weightLow(moistureNoise(worldX / worldWidth, worldY / worldHeight));
-      //     const grassBladeCount = (3 * f(grassCoverage * tileSize));
-      //     const timeFraction = (timestamp % 2000) / 2000;
-      //     const windSpeed = (1 + Math.sin(timeFraction * (2 * Math.PI))) / 2;
-      //     // const grassLean = moistureNoise((worldX / worldWidth) * windSpeed, (worldY / worldHeight) * windSpeed)
-      //     const grassLean = (moistureNoise(windSpeed, windSpeed) + 1) / 2;
-      //     for (let i = 0; i < grassBladeCount; i++) {
-      //       // const bladeX = tileCenterX + ((Math.random() - 0.5) * tileSize);
-      //       // const bladeY = tileCenterY + ((Math.random() - 0.5) * tileSize);
-      //       const bladeX = viewportX + (tileSize * ((i + 0.5) / grassBladeCount));
-      //       const bladeY = viewportY + (tileSize * (((i * 2 + 1) % grassBladeCount) / grassBladeCount));
-
-      //       ctx.beginPath();
-      //       ctx.moveTo(bladeX, bladeY);
-      //       // ctx.lineTo(bladeX + f(Math.random() * 5), bladeY - 3);
-      //       // ctx.lineTo(bladeX + f(windSpeed * 5), bladeY - 3);
-      //       ctx.lineTo(bladeX + f(grassLean * 5), bladeY - 3);
-      //       ctx.strokeStyle = "rgba(0, 255, 0, 0.25)";
-      //       // ctx.strokeStyle = "rgba(0, 255, 0, 1)";
-      //       ctx.stroke();
-      //     }
-      //   }
-      // });
     });
   }
 

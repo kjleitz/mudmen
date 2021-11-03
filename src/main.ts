@@ -3,30 +3,21 @@ import MudworldRenderer from "@/rendering/mudstuff/MudworldRenderer";
 
 window.addEventListener("DOMContentLoaded", () => {
   const viewportCanvas = document.getElementById("viewport") as HTMLCanvasElement;
-  // document.body.tabIndex = 0;
-  // document.body.focus();
   const renderer = new MudworldRenderer(viewportCanvas, mudworld, 24);
-  // renderer.drawWorld();
-  // renderer.drawSpace();
-  // renderer.drawLoop();
   renderer.start();
 
+  // renderer.overlayFullMap = true;
+
   document.body.addEventListener("keydown", (event) => {
-    // console.log(event);
-    if (event.key === "ArrowRight") {
-      renderer.nextHero();
-    } else if (event.key === "ArrowLeft") {
-      renderer.prevHero();
+    switch (event.key) {
+      case "ArrowRight": renderer.nextHero(); break;
+      case "ArrowLeft": renderer.prevHero(); break;
+      case "m": renderer.overlayFullMap = !renderer.overlayFullMap; break;
+      // default: console.log(event.key);
     }
   });
 
   viewportCanvas.addEventListener("click", (event) => {
-    // console.log(event);
-    // if (event.key === "ArrowRight") {
-    //   renderer.nextHero();
-    // } else if (event.key === "ArrowLeft") {
-    //   renderer.prevHero();
-    // }
     const { x, y, data } = renderer.hero.local;
     const viewportOriginX = x - (renderer.viewportWidth / 2);
     const viewportOriginY = y - (renderer.viewportHeight / 2);
