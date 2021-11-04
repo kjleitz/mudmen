@@ -1,4 +1,5 @@
 import Renderer from "@/rendering/base/Renderer";
+import { f } from "@/utilities/math";
 
 export interface DrawSprite {
   (
@@ -18,8 +19,8 @@ export default class SpriteRenderer {
   private spriteRenderers: Renderer[] = [];
 
   constructor(public defaultSpriteWidth: number, public defaultSpriteHeight: number, private fps = 24) {
-    this.defaultSpriteWidth = Math.floor(defaultSpriteWidth);
-    this.defaultSpriteHeight = Math.floor(defaultSpriteHeight);
+    this.defaultSpriteWidth = f(defaultSpriteWidth);
+    this.defaultSpriteHeight = f(defaultSpriteHeight);
   }
 
   addSprite(id: number, padding: number, draw: DrawSprite, ...rest: never): void;
@@ -35,12 +36,12 @@ export default class SpriteRenderer {
       height = this.defaultSpriteHeight;
       draw = drawOrWidth;
     } else if (typeof drawOrHeight === "function") {
-      width = Math.floor(drawOrWidth);
+      width = f(drawOrWidth);
       height = width;
       draw = drawOrHeight;
     } else {
-      width = Math.floor(drawOrWidth);
-      height = Math.floor(drawOrHeight);
+      width = f(drawOrWidth);
+      height = f(drawOrHeight);
       draw = drawSprite;
     }
 
@@ -58,8 +59,8 @@ export default class SpriteRenderer {
         ctx,
         width,
         height,
-        Math.floor(width / 2),
-        Math.floor(height / 2),
+        f(width / 2),
+        f(height / 2),
         0 + padding,
         width - padding,
         height - padding,
@@ -100,10 +101,10 @@ export default class SpriteRenderer {
   ): void {
     const spriteCanvas = this.spriteRenderers[spriteId].canvas;
     const { width, height } = spriteCanvas;
-    const spriteLeftX = x - Math.floor(0.5 * width) + spriteOffsetX;
-    const spriteTopY = y - Math.floor(0.5 * height) + spriteOffsetY;
-    const finalWidth = Math.floor(width * scale);
-    const finalHeight = Math.floor(height * scale);
+    const spriteLeftX = x - f(0.5 * width) + spriteOffsetX;
+    const spriteTopY = y - f(0.5 * height) + spriteOffsetY;
+    const finalWidth = f(width * scale);
+    const finalHeight = f(height * scale);
 
     ctx.drawImage(
       spriteCanvas,

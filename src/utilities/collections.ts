@@ -1,6 +1,8 @@
+import { f, rand } from "@/utilities/math";
+
 export function shuffleInPlace<T>(list: T[]): T[] {
   for (let i = 0; i < list.length; i++) {
-    const j = i + Math.floor(Math.random() * (list.length - i));
+    const j = i + f(rand() * (list.length - i));
     const item = list[i];
     list[i] = list[j];
     list[j] = item;

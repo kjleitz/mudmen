@@ -5,6 +5,7 @@ import moistureNoise from "@/mapmaking/mudworld/generators/moistureNoise";
 import { SNOW_LINE } from "@/mapmaking/mudworld/generators/snowiness";
 import PathFinder, { PathNode } from "@/pathfinding/base/PathFinder";
 import { coords, Coords } from "@/utilities/geo";
+import { f, rand } from "@/utilities/math";
 
 // const TILE_WIDTH = 16;
 
@@ -57,7 +58,7 @@ export default class MudworldMap {
 
       // 255 - 64 = 191, so once you get within 64 of the ceiling it gets drier
       // and drier...
-      const dryness = Math.floor(255 * (Math.max(elevation - 191, 0) / 64));
+      const dryness = f(255 * (Math.max(elevation - 191, 0) / 64));
       // jesus christ
       const wetness = 0.8 * 255 * ((128 - Math.abs(elevation - 128)) / 128);
 
@@ -152,7 +153,7 @@ export default class MudworldMap {
   // Where `noiseModifier` is a value between -1 and 1 (exclusive), returns a
   // value between 0 and 255.
   static noiseToByte(noiseModifier: number): number {
-    return Math.floor((noiseModifier + 1) * 128);
+    return f((noiseModifier + 1) * 128);
   }
 
   static tileValue(
@@ -212,11 +213,11 @@ export default class MudworldMap {
   get height(): number { return this.rowCount * this.tileSize }
 
   xToCol(x: number): number {
-    return Math.floor(x / this.tileSize);
+    return f(x / this.tileSize);
   }
 
   yToRow(y: number): number {
-    return Math.floor(y / this.tileSize);
+    return f(y / this.tileSize);
   }
 
   fillWithTerrain(): void {
@@ -239,8 +240,8 @@ export default class MudworldMap {
     let elevation = -1;
 
     while (elevation < 129) {
-      x = Math.floor(Math.random() * width);
-      y = Math.floor(Math.random() * height);
+      x = f(rand() * width);
+      y = f(rand() * height);
       elevation = MudworldMap.elevationFromTileValue(this.valueAt(x, y));
     }
 
@@ -254,8 +255,8 @@ export default class MudworldMap {
     let walkable = false;
 
     while (!walkable) {
-      x = Math.floor(Math.random() * width);
-      y = Math.floor(Math.random() * height);
+      x = f(rand() * width);
+      y = f(rand() * height);
       walkable = MudworldMap.walkableFromTileValue(this.valueAt(x, y));
     }
 
@@ -265,8 +266,8 @@ export default class MudworldMap {
   // NOTE: This returns TILE coords, not world coords.
   randomWalkableTileCoords(): Coords {
     const worldCoords = this.randomWalkableCoords();
-    worldCoords[0] = Math.floor(worldCoords[0] / this.tileSize);
-    worldCoords[1] = Math.floor(worldCoords[1] / this.tileSize);
+    worldCoords[0] = f(worldCoords[0] / this.tileSize);
+    worldCoords[1] = f(worldCoords[1] / this.tileSize);
     return worldCoords;
   }
 

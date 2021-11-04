@@ -1,5 +1,6 @@
 import { reverseFind } from "@/utilities/collections";
 import { distanceBetween } from "@/utilities/geo";
+import { f } from "@/utilities/math";
 
 export class PathNode {
   public cost: number;
@@ -46,11 +47,11 @@ export default class PathFinder {
   ): void {
     this.reset();
     path.length = 0;
-    startX = Math.floor(startX);
-    startY = Math.floor(startY);
-    destX = Math.floor(destX);
-    destY = Math.floor(destY);
-    stepDistance = Math.floor(stepDistance);
+    startX = f(startX);
+    startY = f(startY);
+    destX = f(destX);
+    destY = f(destY);
+    stepDistance = f(stepDistance);
     // console.log("RESET");
 
     const { nodesToWalk, walkedNodes } = this;
@@ -58,8 +59,8 @@ export default class PathFinder {
     // console.log(totalDistance);
 
     if (totalDistance > eyesight) {
-      destX = Math.floor(startX + ((destX - startX) * (eyesight / totalDistance)));
-      destY = Math.floor(startY + ((destY - startY) * (eyesight / totalDistance)));
+      destX = f(startX + ((destX - startX) * (eyesight / totalDistance)));
+      destY = f(startY + ((destY - startY) * (eyesight / totalDistance)));
       totalDistance = eyesight;
     }
     // console.log(2);

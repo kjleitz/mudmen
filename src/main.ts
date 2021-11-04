@@ -13,6 +13,8 @@ window.addEventListener("DOMContentLoaded", () => {
       case "ArrowRight": renderer.nextHero(); break;
       case "ArrowLeft": renderer.prevHero(); break;
       case "m": renderer.overlayFullMap = !renderer.overlayFullMap; break;
+      case "d": renderer.world.letItBeDay(); break;
+      case "n": renderer.world.letItBeNight(); break;
       // default: console.log(event.key);
     }
   });
@@ -32,6 +34,9 @@ window.addEventListener("DOMContentLoaded", () => {
       destY,
       data.eyesight,
     );
+
+    const item = renderer.world.data.items.itemAt(destX, destY, renderer.tileSize);
+    if (item) renderer.hero.local.data.targetedItem = item;
   });
 
   // TODO: remove

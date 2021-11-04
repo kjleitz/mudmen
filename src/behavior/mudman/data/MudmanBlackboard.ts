@@ -1,7 +1,9 @@
 import Blackboard from "@/behavior/base/data/Blackboard";
 import Item, { ItemType } from "@/models/Item";
+import Mudman from "@/models/Mudman";
 import { PathNode } from "@/pathfinding/base/PathFinder";
 import { Coords, distanceBetween, vectorBetween } from "@/utilities/geo";
+import { f } from "@/utilities/math";
 
 export interface MudmanData {
   currentX: number;
@@ -16,6 +18,8 @@ export interface MudmanData {
   xDirection: number;
   yDirection: number;
   sitting: boolean;
+  targetedItem: Item | null;
+  talkingTo: Mudman | null;
 }
 
 export default class MudmanBlackboard extends Blackboard<MudmanData> {
@@ -39,6 +43,8 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       xDirection: 1,
       yDirection: 1,
       sitting: false,
+      targetedItem: null,
+      talkingTo: null,
     };
   }
 
@@ -46,23 +52,16 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   get y(): number { return this.data.currentY }
 
   get hasPath(): boolean { return this.data.path.length > 0 }
-  // get destination(): PathNode | undefined { return this.data.path[this.data.path.length - 1] }
   get destination(): PathNode | undefined { return this.data.path[0] }
 
   get isNearDestination(): boolean {
     const { destination } = this;
-    // console.log("destination:", destination);
-    // if (destination) console.log("isNear:", this.isNear(destination.x, destination.y));
     return destination ? this.isNear(destination.x, destination.y) : true;
   }
 
-  get nearbyThreshold(): number {
-    return 5 * this.data.moveSpeed;
-  }
-
-  get percentHydrated(): number {
-    return this.data.hydration / 100;
-  }
+  get nearbyThreshold(): number { return 5 * this.data.moveSpeed }
+  get percentHydrated(): number { return this.data.hydration / 100 }
+  get talking(): boolean { return !!this.data.talkingTo }
 
   clearPath(): void {
     this.data.path.length = 0;
@@ -71,13 +70,14 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   }
 
   setCurrentPosition(x: number, y: number): void {
-    x = Math.floor(x);
-    y = Math.floor(y);
+    x = f(x);
+    y = f(y);
 
     this.face(x, y);
 
     if (this.data.currentX !== x || this.data.currentY !== y) {
       this.data.sitting = false;
+      this.data.talkingTo = null;
     }
 
     this.data.currentX = x;
@@ -156,7 +156,13 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     return items;
   }
 
+  isHoldingItem(item: Item): boolean {
+    return this.inventoryOf(item.type).has(item);
+  }
+
   pickUp(item: Item): void {
+    if (!item.collectible) return;
+
     item.held = true;
     this.inventoryOf(item.type).add(item);
   }

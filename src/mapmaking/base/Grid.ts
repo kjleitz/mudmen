@@ -1,6 +1,8 @@
 // Inspired by the `Grid` class described here:
 // https://medium.com/@zandaqo/structurae-data-structures-for-high-performance-javascript-9b7da4c73f8
 
+import { c } from "@/utilities/math";
+
 type TypedArray = Int8Array
   | Uint8Array
   | Uint8ClampedArray
@@ -26,7 +28,7 @@ export default class Grid<T extends TypedArray = TypedArray> {
     // Snapping the "real" column count to powers of 2 so we can do bitwise
     // shift operations... so, e.g., a `colCount` of 100 would make the _actual_
     // column count 128.
-    this.colPower = Math.ceil(Math.log2(colCount));
+    this.colPower = c(Math.log2(colCount));
     this.paddedColCount = 1 << this.colPower;
     const cellCount = rowCount << this.colPower;
 

@@ -2,6 +2,7 @@ import Mudman from "@/models/Mudman";
 import Renderer from "@/rendering/base/Renderer";
 import SpriteRenderer from "@/rendering/base/SpriteRenderer";
 import { BROWN, DARK_BROWN, DARK_SLATE_GRAY, RED, SADDLE_BROWN, SANDY_BROWN } from "@/rendering/mudstuff/colors";
+import { f } from "@/utilities/math";
 
 export const enum MudmanSprite {
   // standing
@@ -100,8 +101,6 @@ const WALKING_LEFT_SPRITES_BACK = [
   MudmanSprite.WALKING_LEFT_3_BACK,
   MudmanSprite.WALKING_LEFT_4_BACK,
 ];
-
-const f = (val: number): number => Math.floor(val);
 
 export default class MudmanRenderer {
   public spriteRenderer: SpriteRenderer;

@@ -1,6 +1,8 @@
 // NOTE: Coordinate system is locked to -32768...+32767 for x and y dimensions
 // TODO: Reconsider this
 
+import { f, rand, randBetween } from "@/utilities/math";
+
 export type Coords = Int16Array;
 export interface Position {
   x: number;
@@ -73,16 +75,12 @@ export function randomPointInCircle(x: number, y: number, minRadius: number, max
   // "Random point between two concentric circles" adapted from... my throbbing
   // head. Holy shit, this took a while to figure out.
   //
-  const randAngle = Math.random() * (2 * Math.PI);
+  const randAngle = rand() * (2 * Math.PI);
   const minRadiusPercent = minRadius / maxRadius;
   const randRadius = maxRadius * Math.sqrt(randBetween(minRadiusPercent ** 2, 1));
 
   return coords(
-    Math.floor(x + (randRadius * Math.cos(randAngle))),
-    Math.floor(y + (randRadius * Math.sin(randAngle))),
+    f(x + (randRadius * Math.cos(randAngle))),
+    f(y + (randRadius * Math.sin(randAngle))),
   );
-}
-
-function randBetween(min: number, max: number) {
-  return min + (Math.random() * (max - min));
 }

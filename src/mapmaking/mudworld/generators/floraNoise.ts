@@ -1,9 +1,10 @@
 import elevationNoise from "@/mapmaking/mudworld/generators/elevationNoise";
 import moistureNoise from "@/mapmaking/mudworld/generators/moistureNoise";
 import { SNOW_LINE } from "@/mapmaking/mudworld/generators/snowiness";
+import { f } from "@/utilities/math";
 import SimplexNoise from "simplex-noise";
 
-export const TREE_LINE = SNOW_LINE + Math.floor((255 - SNOW_LINE) / 4);
+export const TREE_LINE = SNOW_LINE + f((255 - SNOW_LINE) / 4);
 
 // TODO: Seeds should probably be configurable, or from a browser fingerprint,
 // or cached in localStorage (latter two for repeatability, former for new maps)

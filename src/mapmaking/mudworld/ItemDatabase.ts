@@ -38,15 +38,27 @@ export default class ItemDatabase {
     });
   }
 
-  findOfType(itemType: ItemType, mapper: (item: Item) => boolean): Item | undefined {
+  findOfType(itemType: ItemType, test: (item: Item) => boolean): Item | undefined {
     const idIterator = this.idsFor(itemType).values();
     let entry = idIterator.next();
 
     while (!entry.done) {
       const item = this.find(entry.value);
-      if (mapper(item)) return item;
+      if (test(item)) return item;
 
       entry = idIterator.next();
+    }
+  }
+
+  // Careful; this goes through _all_ items
+  findInAllItems(test: (item: Item) => boolean): Item | undefined {
+    const itemIterator = this.itemsById.values();
+    let entry = itemIterator.next();
+
+    while (!entry.done) {
+      if (test(entry.value)) return entry.value;
+
+      entry = itemIterator.next();
     }
   }
 
@@ -54,9 +66,9 @@ export default class ItemDatabase {
     let closestItem: Item | undefined = undefined;
     let closestDistance: number;
 
-    this.forEachOfType(itemType, (item) => {
-      if (item.held) return;
-      if (filter && !filter(item)) return;
+    const itemOnSpot = this.findOfType(itemType, (item) => {
+      if (item.held || (filter && !filter(item))) return false;
+      if (item.x === x && item.y === y) return true;
 
       const distance = distanceBetween(x, y, item.x, item.y);
       closestItem ??= item;
@@ -66,8 +78,32 @@ export default class ItemDatabase {
         closestDistance = distance;
         closestItem = item;
       }
+
+      return false;
     });
 
-    return closestItem;
+    return itemOnSpot ?? closestItem;
+  }
+
+  // Careful; this goes through _all_ items
+  itemAt(x: number, y: number, radius: number, filter?: (item: Item) => boolean): Item | undefined {
+    let closestItem: Item | undefined = undefined;
+    let closestDistance = radius + 1; // i am gemius
+
+    const itemOnSpot = this.findInAllItems((item) => {
+      if (item.held || (filter && !filter(item))) return false;
+      if (item.x === x && item.y === y) return true;
+
+      const distance = distanceBetween(x, y, item.x, item.y);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestItem = item;
+      }
+
+      return false;
+    });
+
+    return itemOnSpot ?? closestItem;
   }
 }

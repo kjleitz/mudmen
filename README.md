@@ -16,6 +16,7 @@ mud men mud men mud men
     - sleep
     - excrement
     - childbirth
+    - death
 1. security (safety and planning) needs
     - taking shelter
     - building shelter
@@ -74,10 +75,57 @@ mud men mud men mud men
 - [ ] use tools
 - [ ] make tools
 - [ ] interact with others
+- [ ] death
+- [ ] mourning
 
 ## nature
 
 ### notes
+
+1. landscape
+    - land
+    - sea
+    - elevation
+    - biomes
+      - forest
+      - desert
+      - plains
+      - arctic
+1. weather
+    - sun
+    - rain
+    - snow
+    - seasons
+    - clouds
+1. day/night
+    - daylight
+    - different animals
+    - temperature
+    - danger
+1. flora
+    - grass
+    - trees
+    - food-bearing plants
+    - farms
+    - seeds
+1. fauna
+    - small animals
+    - medium animals
+    - large animals
+    - pets
+    - danger
+    - herbivores
+    - carnivores
+    - land animals
+    - water animals
+    - sky animals
+1. metaphysics
+    - player (as god)
+    - spirits
+    - gods
+    - fairies
+    - magic
+    - demigods
 
 ### todo
 
@@ -108,6 +156,12 @@ mud men mud men mud men
 ## items and objects
 
 ### notes
+
+- water
+- fire (item? what other category?)
+- regenerating items
+- holding items
+- placing items
 
 ### todo
 
