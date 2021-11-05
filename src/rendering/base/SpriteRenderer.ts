@@ -101,8 +101,8 @@ export default class SpriteRenderer {
   ): void {
     const spriteCanvas = this.spriteRenderers[spriteId].canvas;
     const { width, height } = spriteCanvas;
-    const spriteLeftX = x - f(0.5 * width) + spriteOffsetX;
-    const spriteTopY = y - f(0.5 * height) + spriteOffsetY;
+    const spriteLeftX = f(x - (0.5 * width) + spriteOffsetX);
+    const spriteTopY = f(y - (0.5 * height) + spriteOffsetY);
     const finalWidth = f(width * scale);
     const finalHeight = f(height * scale);
 

@@ -135,6 +135,7 @@ export default class MudworldBlackboard extends Blackboard<MudworldBlackboardDat
 }
 
 export const mudworldItems = new ItemDatabase();
+// export const mudworldMap = new MudworldMap(512, 512, 32);
 export const mudworldMap = new MudworldMap(512, 512, 32);
 // export const mudworldMap = new MudworldMap(512, 512, 2);
 // export const mudworldMap = new MudworldMap(512, 512, 1);

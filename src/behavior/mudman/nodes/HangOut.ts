@@ -1,12 +1,8 @@
-import All from "@/behavior/base/nodes/composites/All";
 import Any from "@/behavior/base/nodes/composites/Any";
 import DecoratorNode from "@/behavior/base/nodes/DecoratorNode";
-import IsHydrated from "@/behavior/mudman/nodes/leaves/IsHydrated";
 import IsTalking from "@/behavior/mudman/nodes/leaves/IsTalking";
-import PickUpItem from "@/behavior/mudman/nodes/leaves/PickUpItem";
 import TalkToNearbyMudman from "@/behavior/mudman/nodes/leaves/TalkToNearbyMudman";
-import UseItem from "@/behavior/mudman/nodes/leaves/UseItem";
-import { ItemType } from "@/models/Item";
+import TargetNearbyMudman from "@/behavior/mudman/nodes/leaves/TargetNearbyMudman";
 
 // Succeeds if:
 //
@@ -24,11 +20,8 @@ export default class HangOut extends DecoratorNode {
       new IsTalking(),
       // is next to someone to talk to and does so successfully
       new TalkToNearbyMudman(),
-      // // currently at water to pick up and use
-      // new All([
-      //   new PickUpItem(ItemType.WATER),
-      //   new UseItem(ItemType.WATER),
-      // ]),
+      // finds someone to talk to and sets his sights on the guy
+      new TargetNearbyMudman(),
     ]));
   }
 }

@@ -1,4 +1,5 @@
 import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
+import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
 
 export const enum ItemType {
   WATER,
@@ -12,8 +13,10 @@ export default class Item {
   public x: number;
   public y: number;
   public held: boolean;
-  public used: boolean;
+  // public used: boolean;
   public collectible: boolean;
+
+  private usedAt: DOMHighResTimeStamp | null = null;
 
   constructor(type: ItemType, x: number, y: number, collectible = true) {
     this.id = Symbol();
@@ -21,11 +24,18 @@ export default class Item {
     this.x = x;
     this.y = y;
     this.held = false;
-    this.used = false;
+    // this.used = false;
     this.collectible = collectible;
   }
 
-  use(_local: MudmanBlackboard): void {
-    this.used = true;
+  // set used(value: boolean) { this.usedAt =  }
+  get used(): boolean { return !!this.usedAt }
+
+  use(local: MudmanBlackboard, world: MudworldBlackboard): void {
+    this.usedAt = world.data.timestamp;
+  }
+
+  refurbish(): void {
+    this.usedAt = null;
   }
 }

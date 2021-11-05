@@ -2,7 +2,7 @@ import Blackboard from "@/behavior/base/data/Blackboard";
 import Item, { ItemType } from "@/models/Item";
 import Mudman from "@/models/Mudman";
 import { PathNode } from "@/pathfinding/base/PathFinder";
-import { Coords, distanceBetween, vectorBetween } from "@/utilities/geo";
+import { Coords, distanceBetween, Position, vectorBetween } from "@/utilities/geo";
 import { f } from "@/utilities/math";
 
 export interface MudmanData {
@@ -13,6 +13,8 @@ export interface MudmanData {
   size: number;
   moveSpeed: number;
   hydration: number;
+  warmth: number;
+  social: number;
   eyesight: number;
   inventory: Map<ItemType, Set<Item>>;
   xDirection: number;
@@ -20,6 +22,7 @@ export interface MudmanData {
   sitting: boolean;
   targetedItem: Item | null;
   talkingTo: Mudman | null;
+  movingTarget: Position | null; // could be anything that implements `Position`
 }
 
 export default class MudmanBlackboard extends Blackboard<MudmanData> {
@@ -36,6 +39,8 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       size: 16,
       moveSpeed: 5,
       hydration: 10,
+      warmth: 50,
+      social: 0,
       // eyesight: 200,
       eyesight: 300,
       // eyesight: 15,
@@ -45,6 +50,7 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
       sitting: false,
       targetedItem: null,
       talkingTo: null,
+      movingTarget: null,
     };
   }
 
@@ -60,7 +66,10 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   }
 
   get nearbyThreshold(): number { return 5 * this.data.moveSpeed }
+  get crowdingThreshold(): number { return this.data.size }
   get percentHydrated(): number { return this.data.hydration / 100 }
+  get percentWarm(): number { return this.data.warmth / 100 }
+  get percentSocial(): number { return this.data.social / 100 }
   get talking(): boolean { return !!this.data.talkingTo }
 
   clearPath(): void {
@@ -145,6 +154,22 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     this.data.hydration = Math.min(this.data.hydration + amount, 100);
   }
 
+  chill(amount = 1): void {
+    this.data.warmth = Math.max(this.data.warmth - amount, 0);
+  }
+
+  toast(amount = 1): void {
+    this.data.warmth = Math.min(this.data.warmth + amount, 100);
+  }
+
+  feelLonely(amount = 1): void {
+    this.data.social = Math.min(this.data.social - amount, 100);
+  }
+
+  feelSocial(amount = 1): void {
+    this.data.social = Math.min(this.data.social + amount, 100);
+  }
+
   inventoryOf(itemType: ItemType): Set<Item> {
     let items = this.data.inventory.get(itemType);
 
@@ -191,6 +216,10 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
     return distanceBetween(this.x, this.y, x, y) <= this.nearbyThreshold;
   }
 
+  isCrowding(x: number, y: number): boolean {
+    return distanceBetween(this.x, this.y, x, y) <= this.crowdingThreshold;
+  }
+
   isAt(x: number, y: number): boolean {
     return this.x === x && this.y === y;
   }
@@ -201,5 +230,30 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
 
   distanceTo(x: number, y: number): number {
     return distanceBetween(this.x, this.y, x, y);
+  }
+
+  talkTo(compatriot: Mudman): void {
+    // Don't talk to yourself. It's unbecoming.
+    if (this === compatriot.local) return;
+
+    const compatriotTalkingTo = compatriot.local.data.talkingTo;
+    // If they're already talking to someone...
+    if (compatriotTalkingTo) {
+      // ...and that someone is *me,* then just talk to them. Otherwise, talk to
+      // the mudman *they* are talking to.
+      if (this === compatriotTalkingTo.local) {
+        this.data.talkingTo = compatriot;
+      } else {
+        this.data.talkingTo = compatriotTalkingTo;
+      }
+    } else {
+      // If not, then just talk to them.
+      this.data.talkingTo = compatriot;
+      // Also, make them face you.
+      compatriot.local.face(this.x, this.y);
+    }
+
+    const { talkingTo } = this.data;
+    this.face(talkingTo.local.x, talkingTo.local.y);
   }
 }

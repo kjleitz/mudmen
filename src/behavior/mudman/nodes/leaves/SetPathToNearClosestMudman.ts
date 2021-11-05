@@ -8,15 +8,12 @@ export default class SetPathToNearClosestMudman extends LeafNode {
     const mudman = world.findClosestMudman(local.x, local.y);
 
     if (!mudman) {
-      if (local === (window as any).renderer.hero.local) console.log("failing")
       this.fail();
     } else {
       const { destination } = mudman.local;
       if (destination) {
-        if (local === (window as any).renderer.hero.local) console.log("setting path to destination")
         processSetPathToNear(this, destination.x, destination.y, local, world);
       } else {
-        if (local === (window as any).renderer.hero.local) console.log("setting path to mudman")
         processSetPathToNear(this, mudman.local.x, mudman.local.y, local, world);
       }
     }

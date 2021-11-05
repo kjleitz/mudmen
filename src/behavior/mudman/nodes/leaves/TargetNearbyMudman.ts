@@ -2,21 +2,21 @@ import LeafNode from "@/behavior/base/nodes/LeafNode";
 import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
 import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
 
-export default class UseTargetedItem extends LeafNode {
+export default class TargetNearbyMudman extends LeafNode {
   process(local: MudmanBlackboard, world: MudworldBlackboard): void {
-    const item = local.data.targetedItem;
+    const mudman = world.findClosestFellowMudman(local);
 
-    if (!item) {
+    if (!mudman) {
       this.fail();
       return;
     }
 
-    if (local.isHoldingItem(item) || (!item.collectible && local.isNear(item.x, item.y))) {
-      if (!item.used) item.use(local, world);
-      local.data.targetedItem = null;
+    if (local.isNear(mudman.local.x, mudman.local.y)) {
       this.succeed();
-    } else {
-      this.fail();
+      return;
     }
+
+    local.data.movingTarget = mudman.local;
+    this.succeed();
   }
 }

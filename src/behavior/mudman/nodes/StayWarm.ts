@@ -5,6 +5,7 @@ import FaceFire from "@/behavior/mudman/nodes/leaves/FaceFire";
 import FaceItem from "@/behavior/mudman/nodes/leaves/FaceItem";
 import IsDay from "@/behavior/mudman/nodes/leaves/IsDay";
 import IsNearFire from "@/behavior/mudman/nodes/leaves/IsNearFire";
+import IsWarm from "@/behavior/mudman/nodes/leaves/IsWarm";
 import Sit from "@/behavior/mudman/nodes/leaves/Sit";
 import { ItemType } from "@/models/Item";
 
@@ -18,6 +19,8 @@ import { ItemType } from "@/models/Item";
 export default class StayWarm extends DecoratorNode {
   constructor() {
     super(new Any([
+      // warm enough
+      new IsWarm(),
       // it's daytime
       new IsDay(),
       // sitting near fire

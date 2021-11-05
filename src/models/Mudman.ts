@@ -2,6 +2,7 @@ import BehaviorTree from "@/behavior/base/BehaviorTree";
 import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
 import { mudworld } from "@/behavior/mudman/data/MudworldBlackboard";
 import MudmanBehavior from "@/behavior/mudman/nodes/MudmanBehavior";
+import { globalSequentialId } from "@/utilities/identification";
 
 export interface MudmanOptions {
   id: string,
@@ -29,11 +30,14 @@ export interface MudmanOptions {
 }
 
 export default class Mudman {
+  public readonly id: number;
+
   public local: MudmanBlackboard;
 
   private behaviorTree: BehaviorTree;
 
   constructor(x?: number, y?: number, eyesight?: number, size?: number) {
+    this.id = globalSequentialId();
     const behavior = new MudmanBehavior();
     const data = MudmanBlackboard.defaults;
     if (x || x === 0) data.currentX = x;
@@ -46,7 +50,7 @@ export default class Mudman {
 
   tick(): void {
     this.behaviorTree.tick();
-    this.local.dehydrate(0.1);
+    // this.local.dehydrate(0.1);
     // this.local.dehydrate(0.5);
     // this.local.dehydrate(1);
   }

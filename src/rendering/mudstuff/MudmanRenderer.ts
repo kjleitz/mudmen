@@ -1,8 +1,8 @@
 import Mudman from "@/models/Mudman";
 import Renderer from "@/rendering/base/Renderer";
-import SpriteRenderer from "@/rendering/base/SpriteRenderer";
-import { BROWN, DARK_BROWN, DARK_SLATE_GRAY, RED, SADDLE_BROWN, SANDY_BROWN } from "@/rendering/mudstuff/colors";
-import { f } from "@/utilities/math";
+import SpriteRenderer, { DrawSprite } from "@/rendering/base/SpriteRenderer";
+import { BLACK, BROWN, DARK_BROWN, DARK_SLATE_GRAY, GRAY_DARK, GRAY_MEDIUM, RED, SADDLE_BROWN, SANDY_BROWN, WHITE } from "@/rendering/mudstuff/colors";
+import { c, f } from "@/utilities/math";
 
 export const enum MudmanSprite {
   // standing
@@ -102,16 +102,50 @@ const WALKING_LEFT_SPRITES_BACK = [
   MudmanSprite.WALKING_LEFT_4_BACK,
 ];
 
+export const enum ConvoSprite {
+  BLANK,
+  TALKING_1,
+  TALKING_2,
+  TALKING_3,
+  TALKING_4,
+  TALKING_5,
+  TALKING_6,
+  TALKING_7,
+  TALKING_8,
+  TALKING_9,
+  TALKING_10,
+  TALKING_11,
+  TALKING_12,
+}
+
+const TALKING_SPRITES = [
+  ConvoSprite.TALKING_1,
+  ConvoSprite.TALKING_2,
+  ConvoSprite.TALKING_3,
+  ConvoSprite.TALKING_4,
+  ConvoSprite.TALKING_5,
+  ConvoSprite.TALKING_6,
+  ConvoSprite.TALKING_7,
+  ConvoSprite.TALKING_8,
+  ConvoSprite.TALKING_9,
+  ConvoSprite.TALKING_10,
+  ConvoSprite.TALKING_11,
+  ConvoSprite.TALKING_12,
+];
+
 export default class MudmanRenderer {
   public spriteRenderer: SpriteRenderer;
+  public convoRenderer: SpriteRenderer;
 
   constructor(public mudmanSize = 20, fps = 24) {
     this.mudmanSize = f(mudmanSize);
     this.spriteRenderer = new SpriteRenderer(this.canvasWidth, this.canvasHeight, fps);
+    this.convoRenderer = new SpriteRenderer(f(this.canvasWidth / 2), f(this.canvasHeight / 3), fps);
 
     this.addStandingSprites();
     this.addSittingSprites();
     this.addWalkingSprites();
+    this.addConvoSprites();
   }
 
   get canvasWidth(): number { return this.mudmanSize * 2 }
@@ -777,6 +811,69 @@ export default class MudmanRenderer {
     );
   }
 
+  addConvoSprites(): void {
+    const drawBubble: DrawSprite = (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+      const bubbleRadius = f(width / 6);
+      const tailHeight = 2 * bubbleRadius;
+      const tailBottomY = bottomY;
+      const tailLeftX = leftX + bubbleRadius;
+      const bubbleBottomY = tailBottomY - tailHeight;
+
+      ctx.fillStyle = WHITE;
+      ctx.strokeStyle = GRAY_DARK;
+      ctx.lineWidth = 1;
+
+      ctx.beginPath();
+      ctx.moveTo(tailLeftX, bubbleBottomY);
+      ctx.arc(leftX + bubbleRadius, bubbleBottomY - bubbleRadius, bubbleRadius, 0.5 * Math.PI, Math.PI);
+      ctx.lineTo(leftX, topY + bubbleRadius);
+      ctx.arc(leftX + bubbleRadius, topY + bubbleRadius, bubbleRadius, Math.PI, -0.5 * Math.PI);
+      ctx.lineTo(rightX - bubbleRadius, topY);
+      ctx.arc(rightX - bubbleRadius, topY + bubbleRadius, bubbleRadius, -0.5 * Math.PI, 0);
+      ctx.lineTo(rightX, bubbleBottomY - bubbleRadius);
+      ctx.arc(rightX - bubbleRadius, bubbleBottomY - bubbleRadius, bubbleRadius, 0, 0.5 * Math.PI);
+      ctx.lineTo(tailLeftX, tailBottomY);
+      ctx.arc(tailLeftX, tailBottomY - bubbleRadius, bubbleRadius, 0.5 * Math.PI, -0.5 * Math.PI, true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    };
+
+    this.convoRenderer.addSprite(ConvoSprite.BLANK, 1, (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+      drawBubble(ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX);
+    });
+
+    TALKING_SPRITES.forEach((sprite) => {
+      this.convoRenderer.addSprite(sprite, 1, (ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX) => {
+        drawBubble(ctx, width, height, centerX, centerY, topY, rightX, bottomY, leftX);
+
+        const bubbleRadius = f(width / 6);
+        const tailHeight = 2 * bubbleRadius;
+        const printableTopY = topY + bubbleRadius;
+        const printableLeftX = leftX + bubbleRadius;
+        const printableHeight = height - tailHeight - (2 * bubbleRadius) - 2;
+        const printableWidth = width - (2 * bubbleRadius) - 2;
+
+        const lineCount = f(Math.random() * 3) + 1;
+        const lineWidth = c(printableHeight / 8);
+        for (let i = 0; i < lineCount; i++) {
+          const lineHeight = f(printableHeight / lineCount);
+          const lineCenterY = printableTopY + (i * lineHeight) + f(lineHeight / 2);
+          const lineTopY = lineCenterY - f(lineWidth / 2);
+          ctx.fillStyle = BLACK;
+          ctx.fillRect(printableLeftX, lineTopY, printableWidth, lineWidth);
+
+          const breakCount = f(Math.random() * 3);
+          for (let i = 0; i < breakCount; i++) {
+            const breakLeftX = printableLeftX + Math.max(2, f(Math.random() * (printableWidth - 2)));
+            ctx.fillStyle = WHITE;
+            ctx.fillRect(breakLeftX, lineTopY, 2, lineWidth);
+          }
+        }
+      });
+    });
+  }
+
   mirrorRenderer(original: Renderer): Renderer {
     const { canvasWidth, canvasHeight } = this;
 
@@ -835,384 +932,16 @@ export default class MudmanRenderer {
 
     this.spriteRenderer.drawSprite(spriteId, ctx, x, y, 0, -0.25 * this.mudmanSize);
   }
+
+  drawConvo(ctx: CanvasRenderingContext2D, mudman: Mudman, x: number, y: number, timestamp: DOMHighResTimeStamp): void {
+    const { talkingTo } = mudman.local.data;
+
+    // if you're talking to somebody and they're not going somewhere...
+    if (talkingTo && !talkingTo.local.hasPath) {
+      const cycleMs = 4000;
+      const cyclePosition = f(TALKING_SPRITES.length * (timestamp % cycleMs) / cycleMs);
+      const talkingSprite = TALKING_SPRITES[(mudman.id + cyclePosition) % TALKING_SPRITES.length];
+      this.convoRenderer.drawSprite(talkingSprite, ctx, x, y, 1 * this.mudmanSize, -1 * this.mudmanSize);
+    }
+  }
 }
-
-// export default class MudmanRenderer {
-//   public standingRenderer: Renderer;
-//   public standingRendererReversed: Renderer;
-//   public walkingRenderers: Renderer[];
-//   public walkingRenderersReversed: Renderer[];
-
-//   private walking1Renderer: Renderer;
-//   private walking2Renderer: Renderer;
-//   private walking3Renderer: Renderer;
-//   private walking4Renderer: Renderer;
-//   private _mudmanSize!: number;
-//   private canvasWidth!: number;
-//   private canvasHeight!: number;
-//   private bodyCenterX!: number;
-//   private bodyCenterY!: number;
-//   private bodyTopY!: number;
-//   private bodyBottomY!: number;
-//   private bodyLeftX!: number;
-//   private bodyRightX!: number;
-//   private bodyWidth!: number;
-//   private bodyHeight!: number;
-//   private buttRadius!: number;
-//   private buttBottomY!: number;
-//   private buttLeftInnerX!: number;
-//   private legWidth!: number;
-//   private legHeight!: number;
-
-//   constructor(mudmanSize = 20, fps = 24) {
-//     this.walkingRenderers = [];
-//     this.walkingRenderersReversed = [];
-//     this.mudmanSize = mudmanSize;
-
-//     this.standingRenderer = new Renderer(
-//       document.createElement("canvas"),
-//       this.canvasWidth,
-//       this.canvasHeight,
-//       fps,
-//     );
-//     this.drawStanding();
-//     this.standingRendererReversed = this.mirrorRenderer(this.standingRenderer);
-
-//     this.walking1Renderer = new Renderer(
-//       document.createElement("canvas"),
-//       this.canvasWidth,
-//       this.canvasHeight,
-//       fps,
-//     );
-//     this.drawWalking1();
-//     this.walkingRenderers.push(this.walking1Renderer);
-//     this.walkingRenderersReversed.push(this.mirrorRenderer(this.walking1Renderer));
-
-//     this.walking2Renderer = new Renderer(
-//       document.createElement("canvas"),
-//       this.canvasWidth,
-//       this.canvasHeight,
-//       fps,
-//     );
-//     this.drawWalking2();
-//     this.walkingRenderers.push(this.walking2Renderer);
-//     this.walkingRenderersReversed.push(this.mirrorRenderer(this.walking2Renderer));
-
-//     this.walking3Renderer = new Renderer(
-//       document.createElement("canvas"),
-//       this.canvasWidth,
-//       this.canvasHeight,
-//       fps,
-//     );
-//     this.drawWalking3();
-//     this.walkingRenderers.push(this.walking3Renderer);
-//     this.walkingRenderersReversed.push(this.mirrorRenderer(this.walking3Renderer));
-
-//     this.walking4Renderer = new Renderer(
-//       document.createElement("canvas"),
-//       this.canvasWidth,
-//       this.canvasHeight,
-//       fps,
-//     );
-//     this.drawWalking4();
-//     this.walkingRenderers.push(this.walking4Renderer);
-//     this.walkingRenderersReversed.push(this.mirrorRenderer(this.walking4Renderer));
-//   }
-
-//   get mudmanSize(): number { return this._mudmanSize }
-//   set mudmanSize(size: number) {
-//     this._mudmanSize = size;
-
-//     this.canvasWidth = size;
-//     this.canvasHeight = size * 2;
-//     this.walkingRenderers.forEach((renderer) => {
-//       renderer.setCanvasSize(this.canvasWidth, this.canvasHeight);
-//     });
-//     this.walkingRenderersReversed.forEach((renderer) => {
-//       renderer.setCanvasSize(this.canvasWidth, this.canvasHeight);
-//     });
-
-//     this.bodyWidth = size;
-//     this.bodyHeight = f(size / 2);
-//     this.bodyCenterX = f(this.canvasWidth / 2);
-//     this.bodyCenterY = f(this.canvasHeight / 2);
-//     this.bodyTopY = f(this.bodyCenterY - (this.bodyHeight / 2));
-//     this.bodyBottomY = this.bodyTopY + this.bodyHeight;
-//     this.bodyLeftX = f(this.bodyCenterX - (this.bodyWidth / 2));
-//     this.bodyRightX = this.bodyLeftX + this.bodyWidth;
-//     this.buttRadius = f(size / 4);
-//     this.buttBottomY = this.bodyBottomY + this.buttRadius;
-//     this.buttLeftInnerX = this.bodyLeftX + this.buttRadius;
-//     this.legWidth = f(size / 4);
-//     this.legHeight = f(size / 2);
-//   }
-
-//   mirrorRenderer(original: Renderer): Renderer {
-//     const { canvasWidth, canvasHeight } = this;
-
-//     const mirrored = new Renderer(
-//       document.createElement("canvas"),
-//       canvasWidth,
-//       canvasHeight,
-//       original.fps,
-//     );
-
-//     mirrored.drawOnce((ctx) => {
-//       ctx.save();
-//       ctx.scale(-1, 1);
-//       ctx.drawImage(original.canvas, 0, 0, -1 * canvasWidth, canvasHeight);
-//       ctx.restore();
-//     });
-
-//     return mirrored;
-//   }
-
-//   drawUpperBody(ctx: CanvasRenderingContext2D): void {
-//     const {
-//       bodyWidth,
-//       bodyCenterX,
-//       bodyTopY,
-//       bodyBottomY,
-//       bodyLeftX,
-//       bodyRightX,
-//       buttRadius,
-//       buttBottomY,
-//       buttLeftInnerX,
-//     } = this;
-
-//     ctx.fillStyle = BROWN;
-//     ctx.beginPath();
-
-//     // head
-//     ctx.arc(bodyCenterX, bodyTopY, bodyWidth / 2, 0, Math.PI, true);
-
-//     // left side of body
-//     ctx.lineTo(bodyLeftX, bodyBottomY);
-
-//     // butt
-//     ctx.arcTo(bodyLeftX, buttBottomY, buttLeftInnerX, buttBottomY, buttRadius);
-//     ctx.lineTo(buttLeftInnerX, buttBottomY);
-
-//     // bottom
-//     ctx.lineTo(bodyRightX, buttBottomY);
-
-//     // right side of body
-//     ctx.lineTo(bodyRightX, bodyTopY);
-
-//     // finish; back at right side of head
-//     ctx.closePath();
-//     ctx.fill();
-//   }
-
-//   drawFace(ctx: CanvasRenderingContext2D): void {
-//     const {
-//       bodyWidth,
-//       bodyTopY,
-//       bodyRightX,
-//     } = this;
-
-//     const faceRadius = f(0.33 * bodyWidth);
-//     const eyeballRadius = f(0.3 * faceRadius);
-//     const faceOffsetX = f((bodyWidth - faceRadius) / 6);
-
-//     const faceCenterX = bodyRightX - faceRadius - faceOffsetX;
-//     const faceCenterY = bodyTopY;
-//     const faceRightX = faceCenterX + faceRadius;
-//     const faceLeftX = faceCenterX - faceRadius;
-
-//     const leftEyeCenterX = faceLeftX + (2 * eyeballRadius);
-//     const rightEyeCenterX = faceRightX - f(1.5 * eyeballRadius);
-
-//     ctx.fillStyle = SANDY_BROWN;
-
-//     // face circle
-//     ctx.beginPath();
-//     ctx.arc(faceCenterX, faceCenterY, faceRadius, 0, 2 * Math.PI);
-//     ctx.fill();
-
-//     ctx.fillStyle = BROWN;
-
-//     // bangs
-//     ctx.beginPath();
-//     ctx.arc(faceCenterX, faceCenterY, faceRadius + 1, -0.2 * Math.PI, -0.8 * Math.PI, true);
-//     ctx.closePath();
-//     ctx.fill();
-
-//     ctx.fillStyle = DARK_SLATE_GRAY;
-
-//     // left eye
-//     ctx.beginPath();
-//     ctx.arc(leftEyeCenterX, faceCenterY, eyeballRadius, 0, 2 * Math.PI);
-//     ctx.fill();
-
-//     // right eye
-//     ctx.beginPath();
-//     ctx.arc(rightEyeCenterX, faceCenterY, eyeballRadius, 0, 2 * Math.PI);
-//     ctx.fill();
-
-
-//     if (bodyWidth > 24) {
-//       const eyebrowWidth = rightEyeCenterX - leftEyeCenterX + (2 * eyeballRadius);
-//       const eyebrowHeight = eyeballRadius;
-//       const eyebrowLeftX = leftEyeCenterX - eyeballRadius;
-//       const eyebrowTopY = faceCenterY - f(0.75 * eyeballRadius) - eyebrowHeight;
-
-//       const mouthWidth = rightEyeCenterX - leftEyeCenterX - (3 * eyeballRadius);
-//       const mouthHeight = eyeballRadius;
-//       const mouthLeftX = faceCenterX - f(0.5 * mouthWidth);
-//       const mouthTopY = faceCenterY + f(1.5 * eyeballRadius);
-
-//       ctx.fillStyle = BROWN;
-
-//       // eyebrow
-//       ctx.fillRect(eyebrowLeftX, eyebrowTopY, eyebrowWidth, eyebrowHeight);
-
-//       ctx.fillStyle = RED;
-
-//       // mouth
-//       ctx.fillRect(mouthLeftX, mouthTopY, mouthWidth, mouthHeight);
-//     }
-//   }
-
-//   drawSimpleFace(ctx: CanvasRenderingContext2D): void {
-//     const {
-//       bodyWidth,
-//       bodyTopY,
-//       bodyRightX,
-//     } = this;
-
-//     const faceRadius = f(0.33 * bodyWidth);
-//     const eyeballRadius = f(0.3 * faceRadius);
-//     const faceOffsetX = f((bodyWidth - faceRadius) / 6);
-
-//     const faceCenterX = bodyRightX - faceRadius - faceOffsetX;
-//     const faceCenterY = bodyTopY;
-//     const faceRightX = faceCenterX + faceRadius;
-//     const faceLeftX = faceCenterX - faceRadius;
-
-//     const leftEyeCenterX = faceLeftX + (2 * eyeballRadius);
-//     const rightEyeCenterX = faceRightX - f(1.5 * eyeballRadius);
-
-//     // ctx.fillStyle = SANDY_BROWN;
-//     ctx.fillStyle = DARK_SLATE_GRAY;
-
-//     // left eye
-//     ctx.beginPath();
-//     ctx.arc(leftEyeCenterX, faceCenterY, eyeballRadius, 0, 2 * Math.PI);
-//     ctx.fill();
-
-//     // right eye
-//     ctx.beginPath();
-//     ctx.arc(rightEyeCenterX, faceCenterY, eyeballRadius, 0, 2 * Math.PI);
-//     ctx.fill();
-//   }
-
-//   drawStanding(): void {
-//     this.standingRenderer.drawOnce((ctx, _timestamp) => {
-//       this.drawUpperBody(ctx);
-//       this.drawSimpleFace(ctx);
-
-//       const { bodyRightX, buttLeftInnerX, buttBottomY, legWidth, legHeight } = this;
-//       ctx.fillStyle = BROWN;
-
-//       // left leg
-//       ctx.fillRect(buttLeftInnerX, buttBottomY, legWidth, legHeight);
-
-//       // right leg
-//       ctx.fillRect(bodyRightX - legWidth, buttBottomY, legWidth, legHeight);
-//     });
-//   }
-
-//   drawWalking1(): void {
-//     this.walking1Renderer.drawOnce((ctx, _timestamp) => {
-//       this.drawUpperBody(ctx);
-//       this.drawSimpleFace(ctx);
-
-//       const { bodyRightX, buttLeftInnerX, buttBottomY, legWidth, legHeight } = this;
-//       ctx.fillStyle = BROWN;
-
-//       // left leg
-//       ctx.fillRect(buttLeftInnerX, buttBottomY - f(legHeight / 2), legWidth, legHeight);
-
-//       // right leg
-//       ctx.fillRect(bodyRightX - legWidth, buttBottomY, legWidth, legHeight);
-//     });
-//   }
-
-//   drawWalking2(): void {
-//     this.walking2Renderer.drawOnce((ctx, _timestamp) => {
-//       this.drawUpperBody(ctx);
-//       this.drawSimpleFace(ctx);
-
-//       const { buttLeftInnerX, bodyCenterX, buttBottomY, legWidth, legHeight } = this;
-//       ctx.fillStyle = BROWN;
-
-//       // left leg
-//       ctx.fillRect(buttLeftInnerX + f(legWidth / 2), buttBottomY - f(legHeight * 0.75), legWidth, legHeight);
-
-//       // right leg
-//       ctx.fillRect(bodyCenterX + f(legWidth * 0.25), buttBottomY, legWidth, legHeight);
-//     });
-//   }
-
-//   drawWalking3(): void {
-//     this.walking3Renderer.drawOnce((ctx, _timestamp) => {
-//       this.drawUpperBody(ctx);
-//       this.drawSimpleFace(ctx);
-
-//       // const { bodyRightX, bodyCenterX, buttBottomY, legWidth, legHeight } = this;
-//       const { buttLeftInnerX, bodyCenterX, buttBottomY, legWidth, legHeight } = this;
-//       ctx.fillStyle = BROWN;
-
-//       // left leg
-//       ctx.fillRect(bodyCenterX + f(legWidth * 0.25), buttBottomY - f(legHeight * 0.75), legWidth, legHeight);
-
-//       // right leg
-//       ctx.fillRect(buttLeftInnerX + f(legWidth / 2), buttBottomY, legWidth, legHeight);
-//     });
-//   }
-
-//   drawWalking4(): void {
-//     this.walking4Renderer.drawOnce((ctx, _timestamp) => {
-//       this.drawUpperBody(ctx);
-//       this.drawSimpleFace(ctx);
-
-//       const { bodyRightX, buttLeftInnerX, buttBottomY, legWidth, legHeight } = this;
-//       ctx.fillStyle = BROWN;
-
-//       // left leg
-//       ctx.fillRect(buttLeftInnerX, buttBottomY, legWidth, legHeight);
-
-//       // right leg
-//       ctx.fillRect(bodyRightX - legWidth, buttBottomY - f(legHeight / 2), legWidth, legHeight);
-//     });
-//   }
-
-//   drawMudman(ctx: CanvasRenderingContext2D, mudman: Mudman, x: number, y: number, timestamp: DOMHighResTimeStamp): void {
-//     const { canvasWidth, canvasHeight } = this;
-
-//     let canvas: HTMLCanvasElement;
-//     const { facingRight } = mudman.local.data;
-
-//     if (mudman.local.hasPath) {
-//       const cycleMs = 200;
-//       // const cycleMs = 250;
-//       // const cycleMs = 300;
-//       // const cycleMs = 500;
-//       // const cycleMs = 2500;
-//       const cyclePosition = f(4 * (timestamp % cycleMs) / cycleMs);
-//       const renderers = facingRight ? this.walkingRenderers : this.walkingRenderersReversed;
-//       canvas = renderers[cyclePosition].canvas;
-//     } else {
-//       canvas = (facingRight ? this.standingRenderer :  this.standingRendererReversed).canvas;
-//     }
-
-//     ctx.drawImage(
-//       canvas,
-//       0, 0,
-//       canvasWidth, canvasHeight,
-//       x - f(0.5 * canvasWidth), y - f(0.75 * canvasHeight),
-//       canvasWidth, canvasHeight,
-//     );
-//   }
-// }

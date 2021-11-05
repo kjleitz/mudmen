@@ -166,6 +166,7 @@ mud men mud men mud men
 ### todo
 
 - [x] water bottles
+- [ ] refill water bottles after a while
 - [x] campfires
 - [ ] cooking food and stuff
 - [ ] rocks (these are structures)

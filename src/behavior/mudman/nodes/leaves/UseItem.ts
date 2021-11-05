@@ -8,11 +8,11 @@ export default class UseItem extends BaseNode {
     super();
   }
 
-  process(local: MudmanBlackboard, _world: MudworldBlackboard): void {
+  process(local: MudmanBlackboard, world: MudworldBlackboard): void {
     const heldItem = local.unusedFromInventory(this.itemType);
 
     if (heldItem && !heldItem.used) {
-      heldItem.use(local);
+      heldItem.use(local, world);
       this.succeed();
     } else {
       this.fail();

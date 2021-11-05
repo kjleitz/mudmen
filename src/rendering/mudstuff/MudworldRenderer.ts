@@ -4,7 +4,7 @@ import MudworldMap, { Structure } from "@/mapmaking/mudworld/MudworldMap";
 import Item, { ItemType } from "@/models/Item";
 import Mudman from "@/models/Mudman";
 import Renderer from "@/rendering/base/Renderer";
-import { BLACK, BLUE, DARK_BROWN, DARK_SLATE_GRAY, LIGHT_HALF, LIGHT_QUARTER, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
+import { BLACK, BLUE, DARK_BROWN, DARK_SLATE_GRAY, GOLD, GRAY_CHARCOAL, GRAY_LIGHT, GRAY_MEDIUM, LIGHT_HALF, LIGHT_QUARTER, RED, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
 import drawShoreline from "@/rendering/mudstuff/drawShoreline";
 import MudmanRenderer from "@/rendering/mudstuff/MudmanRenderer";
 import BottleRenderer, { BottleSprite } from "@/rendering/mudstuff/sprites/BottleRenderer";
@@ -78,7 +78,9 @@ export default class MudworldRenderer {
     this.bottleRenderer = new BottleRenderer(this.tileSize);
     this.treeRenderer = new TreeRenderer(this.tileSize);
 
-    const mudmanSize = 16;
+    // const mudmanSize = 16;
+    // const mudmanSize = 32;
+    const mudmanSize = f(this.tileSize / 2);
     this.mudmanRenderer = new MudmanRenderer(mudmanSize, fps);
 
     const createMudman = (x?: number, y?: number) => {
@@ -301,27 +303,53 @@ export default class MudworldRenderer {
     const barTopY = f(tileSize / 2);
     const barBottomY = barTopY + barHeight;
     const hydrationLeftX = viewportWidth - f(tileSize / 2) - f(barWidth / 2);
+    const warmthLeftX = hydrationLeftX - (barWidth * 2);
+    const socialLeftX = warmthLeftX - (barWidth * 2);
+
+    const barPaths = new Path2D();
 
     const hydrationBar = this.createEmptyFillBar(hydrationLeftX, barTopY, barWidth, barHeight);
+    barPaths.addPath(hydrationBar);
 
-    this.hudRenderer.drawOnce((ctx, _timestamp) => {
-      ctx.clip(hydrationBar);
-    });
+    const warmthBar = this.createEmptyFillBar(warmthLeftX, barTopY, barWidth, barHeight);
+    barPaths.addPath(warmthBar);
+
+    const socialBar = this.createEmptyFillBar(socialLeftX, barTopY, barWidth, barHeight);
+    barPaths.addPath(socialBar);
+
+    this.hudRenderer.ctx.clip(barPaths);
 
     this.hudRenderer.drawLoop((ctx, _timestamp) => {
       ctx.clearRect(0, 0, viewportWidth, viewportHeight);
 
+      // background of the fill bars
+      ctx.fillStyle = SHADOW_QUARTER;
+      ctx.fill(barPaths);
+
+      // hydration bar fill
+      ctx.fillStyle = BLUE;
       const hydrationFillBarHeight = f(this.hero.local.percentHydrated * barHeight);
       const hydrationFillBarTopY = barBottomY - hydrationFillBarHeight;
-
-      ctx.fillStyle = SHADOW_QUARTER;
-      ctx.fill(hydrationBar);
-
-      ctx.fillStyle = BLUE;
       ctx.fillRect(hydrationLeftX, hydrationFillBarTopY, barWidth, hydrationFillBarHeight);
-      ctx.strokeStyle = WHITE;
+
+      // warmth bar fill
+      ctx.fillStyle = RED;
+      const warmthFillBarHeight = f(this.hero.local.percentWarm * barHeight);
+      const warmthFillBarTopY = barBottomY - warmthFillBarHeight;
+      ctx.fillRect(warmthLeftX, warmthFillBarTopY, barWidth, warmthFillBarHeight);
+
+      // social bar fill
+      ctx.fillStyle = GOLD;
+      const socialFillBarHeight = f(this.hero.local.percentSocial * barHeight);
+      const socialFillBarTopY = barBottomY - socialFillBarHeight;
+      ctx.fillRect(socialLeftX, socialFillBarTopY, barWidth, socialFillBarHeight);
+
+      // border of the fill bars
+      // ctx.strokeStyle = WHITE;
+      // ctx.strokeStyle = GRAY_LIGHT;
+      ctx.strokeStyle = GRAY_CHARCOAL;
       ctx.lineWidth = 2;
-      ctx.stroke(hydrationBar);
+      ctx.stroke(barPaths);
     });
   }
 
@@ -547,7 +575,6 @@ export default class MudworldRenderer {
     // population
     this.eachMudmanInViewport(viewportOriginX, viewportOriginY, (mudman, x, y) => {
       this.mudmanRenderer.drawMudman(ctx, mudman, x, y, timestamp);
-      // mudman.tick();
     });
   }
 
@@ -582,6 +609,10 @@ export default class MudworldRenderer {
         default: break;
       }
     }, 0, 1, 1, 1);
+
+    this.eachMudmanInViewport(viewportOriginX, viewportOriginY, (mudman, x, y) => {
+      this.mudmanRenderer.drawConvo(ctx, mudman, x, y, timestamp);
+    });
   }
 
   drawBirdLevel(ctx: CanvasRenderingContext2D, timestamp: number): void {
@@ -602,9 +633,26 @@ export default class MudworldRenderer {
       viewportHeight,
     } = this;
 
-    // indicator showing destination
+    const { movingTarget } = this.hero.local.data;
     const { destination } = this.hero.local;
-    if (destination) {
+
+    if (movingTarget) {
+      // indicator showing moving target
+      const cyclePercent = (timestamp % 500) / 500;
+      ctx.strokeStyle = RED;
+      ctx.globalAlpha = 1 - cyclePercent;
+      ctx.beginPath();
+      ctx.arc(
+        movingTarget.x - viewportOriginX,
+        movingTarget.y - viewportOriginY,
+        f((0.5 * this.tileSize) * cyclePercent),
+        0,
+        2 * Math.PI,
+      );
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    } else if (destination) {
+      // indicator showing destination
       const cyclePercent = (timestamp % 500) / 500;
       ctx.strokeStyle = DARK_SLATE_GRAY;
       ctx.globalAlpha = 1 - cyclePercent;
