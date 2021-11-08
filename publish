@@ -5,5 +5,11 @@
 # https://stackoverflow.com/questions/59895/how-can-i-get-the-source-directory-of-a-bash-script-from-within-the-script-itsel/246128#246128
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+pnpm run -C "$SCRIPT_DIR" build
+
 cp "$SCRIPT_DIR/dist/index.html" "$SCRIPT_DIR/index.html"
 cp "$SCRIPT_DIR/dist/main.js" "$SCRIPT_DIR/main.js"
+
+git -C "$SCRIPT_DIR" add -A
+git -C "$SCRIPT_DIR" commit -m "publishing demo"
+git -C "$SCRIPT_DIR" push
