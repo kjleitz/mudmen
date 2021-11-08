@@ -2,8 +2,10 @@ import Blackboard from "@/behavior/base/data/Blackboard";
 import MudmanBlackboard from "@/behavior/mudman/data/MudmanBlackboard";
 import ItemDatabase from "@/mapmaking/mudworld/ItemDatabase";
 import MudworldMap from "@/mapmaking/mudworld/MudworldMap";
+import { ItemType } from "@/models/Item";
+import { FluidType } from "@/models/items/containers/Bottle";
 import Fire from "@/models/items/Fire";
-import Water from "@/models/items/Water";
+// import Water from "@/models/items/Water";
 import Mudman from "@/models/Mudman";
 import { distanceBetween } from "@/utilities/geo";
 import { f } from "@/utilities/math";
@@ -147,16 +149,20 @@ const WATERS = 1000;
 
 for (let i = 0; i < WATERS; i++) {
   const coords = mudworldMap.randomWalkableCoords();
-  mudworldItems.add(new Water(100, coords[0], coords[1]));
+  // mudworldItems.add(new Water(100, coords[0], coords[1]));
+  // mudworldItems.createWater(100, coords[0], coords[1]);
+  mudworldItems.createBottle(FluidType.WATER, coords[0], coords[1], 100, f(Math.random() * 100));
 }
 
 const FIRES = 1000;
 
 for (let i = 0; i < FIRES; i++) {
   const coords = mudworldMap.randomWalkableCoords();
-  mudworldItems.add(new Fire(coords[0], coords[1]));
+  // mudworldItems.add(new Fire(coords[0], coords[1]));
+  mudworldItems.createFire(coords[0], coords[1]);
 }
-mudworldItems.add(new Fire(300, 210));
+// mudworldItems.add(new Fire(300, 210));
+mudworldItems.createFire(300, 210);
 
 // mudworldItems.add(new Water(100, 325, 300));
 // mudworldItems.add(new Water(100, 535, 300));

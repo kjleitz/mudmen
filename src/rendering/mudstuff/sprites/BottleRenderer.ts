@@ -1,3 +1,4 @@
+import Bottle from "@/models/items/containers/Bottle";
 import SpriteRenderer from "@/rendering/base/SpriteRenderer";
 import { BLUE, WHITE } from "@/rendering/mudstuff/colors";
 import { f } from "@/utilities/math";
@@ -89,5 +90,21 @@ export default class BottleRenderer extends SpriteRenderer {
     bottlePath.closePath();
 
     return bottlePath;
+  }
+
+  drawBottle(
+    ctx: CanvasRenderingContext2D,
+    bottle: Bottle,
+    x: number,
+    y: number,
+    spriteOffsetX?: number,
+    spriteOffsetY?: number,
+    scale?: number,
+  ): void {
+    const spriteId = bottle.isEmpty
+      ? BottleSprite.EMPTY
+      : (bottle.percentFull < 0.67 ? BottleSprite.WATER_PARTIAL : BottleSprite.WATER_FULL);
+
+    this.drawSprite(spriteId, ctx, x, y, spriteOffsetX, spriteOffsetY, scale);
   }
 }

@@ -20,3 +20,33 @@ export function reverseFind<T>(list: T[], mapper: (item: T, index: number) => bo
     if (mapper(list[i], i)) return list[i];
   }
 }
+
+export function mappedSetFor<Key, Value>(map: Map<Key, Set<Value>>, key: Key): Set<Value> {
+  let values = map.get(key);
+
+  if (!values) {
+    values = new Set();
+    map.set(key, values);
+  }
+
+  return values;
+}
+
+export function addToMappedSetFor<Key, Value>(map: Map<Key, Set<Value>>, key: Key, value: Value): void {
+  mappedSetFor(map, key).add(value);
+}
+
+export function mappedArrayFor<Key, Value>(map: Map<Key, Value[]>, key: Key): Value[] {
+  let values = map.get(key);
+
+  if (!values) {
+    values = [];
+    map.set(key, values);
+  }
+
+  return values;
+}
+
+export function addToMappedArrayFor<Key, Value>(map: Map<Key, Value[]>, key: Key, value: Value): void {
+  mappedArrayFor(map, key).push(value);
+}

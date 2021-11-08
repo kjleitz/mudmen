@@ -2,6 +2,7 @@ import Blackboard from "@/behavior/base/data/Blackboard";
 import Item, { ItemType } from "@/models/Item";
 import Mudman from "@/models/Mudman";
 import { PathNode } from "@/pathfinding/base/PathFinder";
+import { mappedSetFor } from "@/utilities/collections";
 import { Coords, distanceBetween, Position, vectorBetween } from "@/utilities/geo";
 import { f } from "@/utilities/math";
 
@@ -171,14 +172,7 @@ export default class MudmanBlackboard extends Blackboard<MudmanData> {
   }
 
   inventoryOf(itemType: ItemType): Set<Item> {
-    let items = this.data.inventory.get(itemType);
-
-    if (!items) {
-      items = new Set();
-      this.data.inventory.set(itemType, items);
-    }
-
-    return items;
+    return mappedSetFor(this.data.inventory, itemType);
   }
 
   isHoldingItem(item: Item): boolean {

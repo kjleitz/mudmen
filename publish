@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# SCRIPT_DIR is the directory of this script no matter which directory this
+# script is actually executed in. Found in this great StackOverflow answer:
+# https://stackoverflow.com/questions/59895/how-can-i-get-the-source-directory-of-a-bash-script-from-within-the-script-itsel/246128#246128
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+cp "$SCRIPT_DIR/dist/index.html" "$SCRIPT_DIR/index.html"
+cp "$SCRIPT_DIR/dist/main.js" "$SCRIPT_DIR/main.js"

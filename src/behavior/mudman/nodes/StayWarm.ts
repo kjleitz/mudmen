@@ -7,6 +7,7 @@ import IsDay from "@/behavior/mudman/nodes/leaves/IsDay";
 import IsNearFire from "@/behavior/mudman/nodes/leaves/IsNearFire";
 import IsWarm from "@/behavior/mudman/nodes/leaves/IsWarm";
 import Sit from "@/behavior/mudman/nodes/leaves/Sit";
+import MakeRoomForOthers from "@/behavior/mudman/nodes/MakeRoomForOthers";
 import { ItemType } from "@/models/Item";
 
 // Succeeds if:
@@ -26,6 +27,7 @@ export default class StayWarm extends DecoratorNode {
       // sitting near fire
       new All([
         new IsNearFire(),
+        new MakeRoomForOthers(),
         new FaceFire(),
         new Sit(),
       ]),

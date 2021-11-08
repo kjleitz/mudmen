@@ -23,10 +23,10 @@ export default class SpriteRenderer {
     this.defaultSpriteHeight = f(defaultSpriteHeight);
   }
 
-  addSprite(id: number, padding: number, draw: DrawSprite, ...rest: never): void;
-  addSprite(id: number, padding: number, size: number, draw: DrawSprite, ...rest: never): void;
+  addSprite(id: number, padding: number, draw: DrawSprite): void;
+  addSprite(id: number, padding: number, size: number, draw: DrawSprite): void;
   addSprite(id: number, padding: number, width: number, height: number, draw: DrawSprite): void;
-  addSprite(id: number, padding: number, ...[drawOrWidth, drawOrHeight, drawSprite]: [DrawSprite, never, never] | [number, DrawSprite, never] | [number, number, DrawSprite]): void {
+  addSprite(id: number, padding: number, drawOrWidth: number | DrawSprite, drawOrHeight?: number | DrawSprite, drawSprite?: DrawSprite): void {
     let width: number;
     let height: number;
     let draw: DrawSprite;
@@ -41,8 +41,8 @@ export default class SpriteRenderer {
       draw = drawOrHeight;
     } else {
       width = f(drawOrWidth);
-      height = f(drawOrHeight);
-      draw = drawSprite;
+      height = f(drawOrHeight!);
+      draw = drawSprite!;
     }
 
     const renderer = new Renderer(

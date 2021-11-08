@@ -86,7 +86,7 @@ export default class MudmanBehavior extends DecoratorNode {
           new Any([
             new StayHydrated(),
             // set a path to some water (fail here so it returns to the beginning)
-            new Fail(new SetPathToItem(ItemType.WATER)),
+            new Fail(new SetPathToItem(ItemType.BOTTLE)),
           ]),
           new Any([
             new StayWarm(),

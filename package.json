@@ -9,6 +9,7 @@
     "build:watch": "webpack --mode development --watch",
     "start": "webpack serve --mode development",
     "start:open": "webpack serve --mode development --open",
+    "publish": "./publish",
     "lint": "eslint ."
   },
   "repository": {

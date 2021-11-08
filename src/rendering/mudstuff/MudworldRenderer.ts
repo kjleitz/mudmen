@@ -2,6 +2,7 @@ import MudworldBlackboard from "@/behavior/mudman/data/MudworldBlackboard";
 import snowiness from "@/mapmaking/mudworld/generators/snowiness";
 import MudworldMap, { Structure } from "@/mapmaking/mudworld/MudworldMap";
 import Item, { ItemType } from "@/models/Item";
+import Bottle from "@/models/items/containers/Bottle";
 import Mudman from "@/models/Mudman";
 import Renderer from "@/rendering/base/Renderer";
 import { BLACK, BLUE, DARK_BROWN, DARK_SLATE_GRAY, GOLD, GRAY_CHARCOAL, GRAY_LIGHT, GRAY_MEDIUM, LIGHT_HALF, LIGHT_QUARTER, RED, SHADOW_QUARTER, TRANSPARENT, WHITE } from "@/rendering/mudstuff/colors";
@@ -531,8 +532,8 @@ export default class MudworldRenderer {
     } = this;
 
     // items (water)
-    this.eachItemOfTypeInViewport(ItemType.WATER, viewportOriginX, viewportOriginY, (item, x, y) => {
-      this.bottleRenderer.drawSprite(BottleSprite.WATER_FULL, ctx, x, y);
+    this.eachItemOfTypeInViewport(ItemType.BOTTLE, viewportOriginX, viewportOriginY, (bottle, x, y) => {
+      this.bottleRenderer.drawBottle(ctx, bottle as Bottle, x, y);
     });
 
     // items (fire)

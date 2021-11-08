@@ -21,11 +21,11 @@ export default class StayHydrated extends DecoratorNode {
       // already hydrated
       new IsHydrated(),
       // has water on hand and can use it
-      new UseItem(ItemType.WATER),
+      new UseItem(ItemType.BOTTLE),
       // currently at water to pick up and use
       new All([
-        new PickUpItem(ItemType.WATER),
-        new UseItem(ItemType.WATER),
+        new PickUpItem(ItemType.BOTTLE),
+        new UseItem(ItemType.BOTTLE),
       ]),
     ]));
   }

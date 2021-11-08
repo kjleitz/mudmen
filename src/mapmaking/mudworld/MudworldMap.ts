@@ -4,7 +4,7 @@ import floraNoise, { TREE_LINE } from "@/mapmaking/mudworld/generators/floraNois
 import moistureNoise from "@/mapmaking/mudworld/generators/moistureNoise";
 import { SNOW_LINE } from "@/mapmaking/mudworld/generators/snowiness";
 import PathFinder, { PathNode } from "@/pathfinding/base/PathFinder";
-import { coords, Coords } from "@/utilities/geo";
+import { coords, Coords, distanceBetween } from "@/utilities/geo";
 import { f, rand } from "@/utilities/math";
 
 // const TILE_WIDTH = 16;
@@ -298,4 +298,132 @@ export default class MudworldMap {
     return MudworldMap.underwaterFromTileValue(this.valueAt(x, y))
       || !this.inBounds(x, y);
   }
+
+  tileIsTouched(tileSize: number, originX: number, originY: number, row: number, col: number, distance: number): boolean {
+    const leftX = col * tileSize;
+    const rightX = (col + 1) * tileSize;
+    const topY = row * tileSize;
+    const bottomY = (row + 1) * tileSize;
+
+    if (leftX < originX) {
+      if (topY < originY) {
+        // top left quadrant
+        const distanceToTopLeft = distanceBetween(originX, originY, leftX, topY);
+        const distanceToBottomRight = distanceBetween(originX, originY, rightX, bottomY);
+        return (distanceToTopLeft >= distance && distance >= distanceToBottomRight);
+      } else {
+        // bottom left quadrant
+        const distanceToTopRight = distanceBetween(originX, originY, rightX, topY);
+        const distanceToBottomLeft = distanceBetween(originX, originY, leftX, bottomY);
+        return (distanceToBottomLeft >= distance && distance >= distanceToTopRight);
+      }
+    } else {
+      if (topY < originY) {
+        // top right quadrant
+        const distanceToTopRight = distanceBetween(originX, originY, rightX, topY);
+        const distanceToBottomLeft = distanceBetween(originX, originY, leftX, bottomY);
+        return (distanceToBottomLeft <= distance && distance <= distanceToTopRight);
+      } else {
+        // bottom right quadrant
+        const distanceToTopLeft = distanceBetween(originX, originY, leftX, topY);
+        const distanceToBottomRight = distanceBetween(originX, originY, rightX, bottomY);
+        return (distanceToTopLeft <= distance && distance <= distanceToBottomRight);
+      }
+    }
+  }
+
+  eachTileAtDistanceFrom(x: number, y: number, distance: number, mapper: MudworldMapper<void>): void {
+    const { tileSize } = this;
+
+    // start at far left of circle, going clockwise
+    const centerCol = this.xToCol(x);
+    const centerRow = this.yToRow(y);
+    const startCol = this.xToCol(x - distance);
+    const startRow = centerRow;
+
+    // we'll stop when we hit our starting tile again
+    let started = false;
+    let col = startCol;
+    let row = startRow;
+
+    // I doubt this is the "correct" way of doing this, but I give up. To be
+    // clear: this is not just a problem of graphing a circle onto a grid; it's
+    // graphing a circle onto a lower-resolution grid while keeping the fidelity
+    // of the resolution of the starting point, in the most efficient manner...
+    // like, the center point could be anywhere in the center tile, and we want
+    // to graph every tile intersected by a circle of radius `distance` from the
+    // center point. We don't want to do the naive thing and loop through every
+    // single tile in the grid bounded by a square circumscribing the circle,
+    // because that's way too wasteful. We also don't want to just start with a
+    // tile on the circle and then check all eight adjacent points in the same
+    // order, either, because while that would be better than the former
+    // solution it would also count unnecessary tiles. What we're doing here,
+    // instead, is starting with a tile on the circle, noting the direction we
+    // want to go in (tangent to the circle), and checking the three tiles
+    // adjacent to that one which could possibly contain the next touched point.
+    // Good enough for me. If there's a better way, I don't really give a shit.
+    while (!started || col !== startCol || row !== startRow) {
+      started = true;
+
+      MudworldMap.feedMapper(this.grid, row, col, mapper);
+
+      if (col < centerCol) {
+        if (row < centerRow) {
+          // top left quadrant
+          if (this.tileIsTouched(tileSize, x, y, row - 1, col, distance)) {
+            row -= 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row, col + 1, distance)) {
+            col += 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row - 1, col + 1, distance)) {
+            row -= 1;
+            col += 1;
+          } else {
+            throw new Error("How the hell did that happen?");
+          }
+        } else {
+          // bottom left quadrant
+          if (this.tileIsTouched(tileSize, x, y, row, col - 1, distance)) {
+            col -= 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row - 1, col, distance)) {
+            row -= 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row - 1, col - 1, distance)) {
+            row -= 1;
+            col -= 1;
+          } else {
+            throw new Error("How the hell did that happen?");
+          }
+        }
+      } else {
+        if (row < centerRow) {
+          // top right quadrant
+          if (this.tileIsTouched(tileSize, x, y, row, col + 1, distance)) {
+            col += 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row + 1, col, distance)) {
+            row += 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row + 1, col + 1, distance)) {
+            row += 1;
+            col += 1;
+          } else {
+            throw new Error("How the hell did that happen?");
+          }
+        } else {
+          // bottom right quadrant
+          if (this.tileIsTouched(tileSize, x, y, row + 1, col, distance)) {
+            row += 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row, col - 1, distance)) {
+            col -= 1;
+          } else if (this.tileIsTouched(tileSize, x, y, row + 1, col - 1, distance)) {
+            row += 1;
+            col -= 1;
+          } else {
+            throw new Error("How the hell did that happen?");
+          }
+        }
+      }
+    }
+  }
+
+  // closestShorelineTo(x: number, y: number): Coords {
+  //   // this.each
+  // }
 }
