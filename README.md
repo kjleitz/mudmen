@@ -4,6 +4,8 @@
 
 mud men mud men mud men
 
+![mudmen.gif](mudmen.gif)
+
 ## demo
 
 https://kjleitz.github.io/mudmen (note for mobile users: the ground/terrain doesn't render on any mobile device I've tested, at the moment... so, try on desktop instead)
