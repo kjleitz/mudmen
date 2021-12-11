@@ -4,6 +4,39 @@
 
 mud men mud men mud men
 
+## demo
+
+https://kjleitz.github.io/mudmen (note for mobile users: the ground/terrain doesn't render on any mobile device I've tested, at the moment... so, try on desktop instead)
+
+### controls
+
+- press `m` to open the map (every pixel of the map is one "square" on the ground when you're following a mudman)
+- press `←` and `→` (left and right arrow keys) to cycle through the 1,000 wandering mudmen
+- click a spot in the viewport to get the mudman you're following to traverse to the spot you clicked
+- press `n` to invoke nighttime (or just wait ~30s), press `d` to invoke daytime (or just wait ~30s)
+- sit back and watch
+
+### basic explanation
+
+- all terrain, flora, biomes, etc., are procedurally generated with simplex noise
+- each of the 1,000 mudmen represent individual behavior-tree-based AIs, and their pathfinding uses a variant of the A* algorithm
+- the three meters at the top right represent social satisfaction (yellow), warmth (red), and hydration (blue) for the mudman you're following
+
+## try out locally
+
+first, [install `pnpm`](https://pnpm.io/installation).
+
+then:
+
+```
+git clone https://github.com/kjleitz/mudmen.git
+cd mudmen
+pnpm install
+pnpm run start
+```
+
+...then open http://localhost:8080.
+
 ## behavior
 
 ### notes
